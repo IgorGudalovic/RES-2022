@@ -3,6 +3,8 @@ import models.item as item
 import models.description as description
 import constants.codes as codes
 from threading import Thread
+import components.writer as writer
+
 
 class LoadBalancer:
     buffer = []
@@ -72,7 +74,8 @@ class LoadBalancer:
     def WorkerUpdate(self):
         data = pickle.loads(conn2.recv())
 
-        #data = workerState(data)
+        data= writer.WorkerState(data)
+        print('Igor sent message')
         #logika 
         pass
     
