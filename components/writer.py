@@ -42,14 +42,20 @@ class Writer:
         return client
 
     def SendWorkerState(self):
+        client = self.CreateConnectionWorker()
         workerDict = {
             1:"ON",
             2:"ON",
             3:"ON",
             4:"ON"
         }
-        variable = WorkerState()
-        s = pickle.dumps()
+        variable = WorkerState(workerDict)
+        state_data = pickle.dumps(variable)
+        try:
+            client.send(state_data)
+            print('Item Sent to Server')                         
+        except:
+            print('Send error!')  
         pass
 
 
