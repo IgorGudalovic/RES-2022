@@ -1,9 +1,11 @@
-import socket,pickle 
+import socket,pickle
+import sys
+sys.path.append("C:\\Users\\Ema\\OneDrive\\Dokumenti\\GitHub\\RES-2022")
+from threading import Thread
+import components.writer as writer
 import models.item as item
 import models.description as description
 import constants.codes as codes
-from threading import Thread
-import components.writer as writer
 
 
 class LoadBalancer:
@@ -11,7 +13,7 @@ class LoadBalancer:
     id = 0
 
     #Formiranje uticice i postavljanej u stanje listening
-    def InitalizeServer(self, port:int):
+    def InitalizeServer( port):
         try:
             LBSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         except socket.error as err:

@@ -1,10 +1,7 @@
 import socket,pickle,time,random
 import constants.codes as codes
 
-class Item:
-    def __init__(self,code,value):
-        self.code = code
-        self.age = value
+
 
 class WorkerState:
     # Pali i gasi Workere
