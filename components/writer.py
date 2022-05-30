@@ -1,14 +1,16 @@
-import socket,pickle,time,random
+import sys
+sys.path.append('/home/x/Documents/GitHub/RES-2022/')
+import socket, pickle, time, random
 import constants.codes as codes
+import models.item as Item
 
 
-
-class WorkerState:
+class WorkerState():
     # Pali i gasi Workere
-    def _init_(self,dict):
+    def __init__(self,dict):
         self.dict = dict
 
-class Writer:
+class Writer():
     #Create Connection
     def CreateConnectionLB(self):
         # Create a socket connection.
@@ -20,7 +22,7 @@ class Writer:
         try:
             clientLB.connect((socket.gethostname(), 8081))
         except:
-            print('Socket connection error!')
+            print('Socket connection error!1')
         clientLB.close()
         return clientLB
 
@@ -34,7 +36,7 @@ class Writer:
         try:
             client.connect((socket.gethostname(), 8082))
         except:
-            print('Socket connection error!')
+            print('Socket connection error!2')
         client.close()
         return client
 
@@ -42,7 +44,7 @@ class Writer:
         client = self.CreateConnectionWorker()
         workerDict = {
             1:"ON",
-            2:"ON",
+            2:"OFF",
             3:"ON",
             4:"ON"
         }
@@ -59,8 +61,9 @@ class Writer:
     # Salje podatke Load Balanceru svake 2 sekunde
     def RunDataSending(self):
         clientLB = self.CreateConnectionLB()
-
-        listCodes= codes.Code.getList()
+        listCodes = []
+        for code in codes.Code:
+            listCodes.append(code.name)
         while True:                    
             # Create an instance of Person to send to server.
             variable = Item(random.choice(listCodes),random.randint(1,500))
@@ -69,8 +72,13 @@ class Writer:
             
             try:
                 clientLB.send(data_string)
-                print('Item Sent to Server')                         
+                print('Item Sent to Server')
+                Writer.SendWorkerState()
+                print('Worker state Sent to Server')
             except:
                 print('Send error!')        
             time.sleep(2)               
             pass    
+w = Writer()
+w.RunDataSending()
+    

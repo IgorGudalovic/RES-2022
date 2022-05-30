@@ -11,7 +11,3 @@ class Code(Enum):
     CODE_CONSUMER = 7
     CODE_SOURCE = 8
 
-    def getList(cls):
-        #cstrList vraca string vrednosti enuma
-        strList = Code._member_names_
-        return strList

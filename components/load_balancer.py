@@ -1,28 +1,31 @@
-import socket,pickle
+import socket,pickle 
 import sys
-sys.path.append("C:\\Users\\Ema\\OneDrive\\Dokumenti\\GitHub\\RES-2022")
-from threading import Thread
-import components.writer as writer
+sys.path.append('/home/x/Documents/GitHub/RES-2022/')
 import models.item as item
 import models.description as description
 import constants.codes as codes
+from threading import Thread
+import components.writer as writer
 
 
 class LoadBalancer:
+    def __init__(self, port):
+        self.port = port
+        pass
     buffer = []
     id = 0
 
     #Formiranje uticice i postavljanej u stanje listening
-    def InitalizeServer( port):
+    def InitalizeServer(self):
         try:
             LBSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         except socket.error as err:
             print("socket creation failed with error %s" %(err))
 
         try:    
-            LBSocket.bind((socket.gethostname(), port))
+            LBSocket.bind((socket.gethostname(), self.port))
         except:
-            print("socket inding failed with error %s" %(err))
+            print("socket binding failed with error %s" %(err))
             LBSocket.close()
 
         LBSocket.listen()
@@ -82,13 +85,15 @@ class LoadBalancer:
         pass
     
 
-LBSocketData = LoadBalancer.InitalizeServer(8081)
-LBSocketWorker = LoadBalancer.InitalizeServer(8082)
+LBData = LoadBalancer(8081)
+LBDataSocket = LBData.InitalizeServer()
+LBWorker = LoadBalancer(8082)
+LBWorkerSocket = LBWorker.InitalizeServer()
 while True:
-    conn2, addr2 =LBSocketWorker.accept()
-    LoadBalancer.WorkerUpdate()
+    conn2, addr2 =LBWorkerSocket.accept()
+    LBWorker.WorkerUpdate()
 
-    conn, addr = LBSocketData.accept()
+    conn, addr = LBDataSocket.accept()
     print ('Got connection from', addr )
     while True:
         data = LoadBalancer.ReciveData()
