@@ -8,10 +8,10 @@ from constants.codes import Code
 import worker
 
 def WorkerStates(data):
-    worker1 = threading.Thread(target=worker.SaveData())
-    worker2 = threading.Thread(target=worker.SaveData())
-    worker3 = threading.Thread(target=worker.SaveData())
-    worker4 = threading.Thread(target=worker.SaveData())
+    worker1 = threading.Thread(target=worker.SaveData)
+    worker2 = threading.Thread(target=worker.SaveData)
+    worker3 = threading.Thread(target=worker.SaveData)
+    worker4 = threading.Thread(target=worker.SaveData)
     listaWorkera = []
     listaWorkera.append(worker1)
     listaWorkera.append(worker2)
