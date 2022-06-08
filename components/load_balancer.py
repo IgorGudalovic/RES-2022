@@ -55,7 +55,7 @@ class LoadBalancer:
             if  dataRecv == "ON":
                 print("NOVI WORKER UPALJEN\n")
                 brWorkera +=1 
-                tWorker = Process(target=worker.SaveData)
+                tWorker = Process(target=worker.SaveData())
                 listaWorkera.append(tWorker)
             else:
                 if  dataRecv == "OFF":
