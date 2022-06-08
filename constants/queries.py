@@ -11,13 +11,3 @@ class Queries:
 
     InsertItem = lambda dataset_id, code, value: f"""insert into DATASET_{dataset_id} (code, value)
                                                      values ('{code}', {value})"""
-
-# con = sqlite3.connect('../database/database.db')
-# cur = con.cursor()
-# # cur.execute(Queries.InsertItem(1, 'CODE_DIGITAL', 2, datetime.datetime.now().timestamp()))
-# cur.execute(Queries.GetLastValue(1, 'CODE_ANALOG'))
-# print(cur.fetchone()[0])
-# # con.commit()
-# con.close()
-
-# print(Queries.InsertItem(1, 'CODE_ANALOG', 5, datetime.datetime.now()))
