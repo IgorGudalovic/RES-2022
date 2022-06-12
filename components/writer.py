@@ -1,15 +1,16 @@
 import sys
 import threading
-sys.path.append('/home/x/Documents/GitHub/RES-2022/')
+sys.path.append('D:\GITHUB\RESProjekat3\RES-2022')
 import socket, pickle, time, random
 import constants.codes as codes
 from models.item import Item
 from multiprocessing import Process
 from threading import Timer
+#from components.load_balancer import LoadBalancer
 
 
 client_socket = socket.socket()
-client_socket.connect(('127.0.0.1', 5005))    
+client_socket.connect(('127.0.0.1', 5001))    
 client_socket2 = socket.socket()
 client_socket2.connect(('127.0.0.2', 5000)) 
 
@@ -28,17 +29,19 @@ class Writer:
             client_socket.send(data_string)
             time.sleep(2)
 
-    def PraznaPoruka():
+    def EmprtyMessage():
         msg = ""
         client_socket2.send(msg.encode("utf-8"))
 
     def  SendState():   
         while True:
             try:
-                t = Timer(2.0, Writer.PraznaPoruka)
+                t = Timer(2.0, Writer.EmprtyMessage)
                 t.start()
                 t.join()
-                state = input("Upisi broj za komandu koju zelite:   \n\t1.Upali novi worker\n\t2.Ugasi workera\n\n")
+                state = input("Upisi broj za komandu koju zelite:\n\
+                                1.Upali novi worker\n\
+                                2.Ugasi workera\n\n")
                 t.cancel()
                 if state == "1":
                     print("Upali workera")
@@ -54,7 +57,7 @@ class Writer:
             except EOFError as e:
                 print(e)            
             
-
+#LoadBalancer.DoLoadBalancer()
 pItemSend = Process(target=Writer.SendItem)
 pStateSend = threading.Thread(target=Writer.SendState)
 pItemSend.start()
