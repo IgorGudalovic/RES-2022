@@ -10,3 +10,4 @@ class Code(Enum):
     CODE_MULTIPLENODE = 6
     CODE_CONSUMER = 7
     CODE_SOURCE = 8
+
