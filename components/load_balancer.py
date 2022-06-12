@@ -1,74 +1,81 @@
-import socket,pickle, time, threading
+import socket,pickle,threading
 import sys
 sys.path.append('/home/x/Documents/GitHub/RES-2022/')
-from threading import Thread
 from models.item import Item
-from models.description import Description
-from constants.codes import Code
 import worker
+from multiprocessing import Process
 
-def WorkerStates(data):
-    worker1 = threading.Thread(target=worker.SaveData)
-    worker2 = threading.Thread(target=worker.SaveData)
-    worker3 = threading.Thread(target=worker.SaveData)
-    worker4 = threading.Thread(target=worker.SaveData)
-    listaWorkera = []
-    listaWorkera.append(worker1)
-    listaWorkera.append(worker2)
-    listaWorkera.append(worker3)
-    listaWorkera.append(worker4)
-
-    br=0
-    for string in data:
-        
-        if  string == "ON":
-            listaWorkera[br].start()
-            listaWorkera[br].join()
-        else:
-            break
-        br+=1
-    print(f"Thread {listaWorkera[br]} je {string}")
-
-
-def instancirajDesc(code:Code):
-    if code== Code.CODE_ANALOG or code== Code.CODE_DIGITAL:
-        desc = Description(id, items,1)
-    elif code == Code.CODE_CUSTOM or code == Code.CODE_LIMITSET:
-        desc = Description(id, items,2)
-    elif code == Code.CODE_SINGLENOE or code == Code.CODE_MULTIPLENODE:
-        desc = Description(id, items,3)
-    else :
-        desc = Description(id, items,4)    
-    return desc
-
-#prima worker state
 server_socket = socket.socket()
-server_socket.bind((socket.gethostname(), 5001))
+server_socket.bind(('127.0.0.1', 5005))
+server_socket2 = socket.socket()
+server_socket2.bind(('127.0.0.2', 5000))
+server_socket2.listen()
 server_socket.listen()
-conn, address = server_socket.accept()
-print("Connection from: " + str(address))
-dataRecv = conn.recv(4096)
-data1 = []
-data1 = pickle.loads(dataRecv)
-print(f"from connected user: {data1}")
 
-WorkerStates(data1)
+brWorkera = 0
+listaWorkera = []
+class LoadBalancer:
 
-items = []
-#prima item
-id = 0
-while True:
-    id +=1
-    dataRecv = conn.recv(4096)
-    # receive data stream. it won't accept data packet greater than 1024 bytes
-    data = pickle.loads(dataRecv)   
-    if not data:
-        # if data is not received break
-        break
-    item = Item(data.code, data.value)
-    items.append(item)
-    desc = instancirajDesc(data.code)
-    for x in items:
-        print(f"Lista code:{x.code}  lista vrednost: {x.value}\n")
-    print(f"from connected user: {data.code} {data.value}\n")
-conn.close()  # close the connection
+    def ReceiveItem():
+        #Receives item
+        items = []
+        id = 0        
+        conn, address = server_socket.accept()
+        #print("Connection from: " + str(address))
+        while True:
+            #server_socket.listen()
+            id +=1
+            dataRecv = conn.recv(4096)
+            # receive data stream
+            data = pickle.loads(dataRecv)   
+            if not data:
+                # if data is not received break
+                break
+            item = Item(data.code, data.value)
+            items.append(item)
+            pom = id - 1
+            print(f"Item br {pom} code:{items[pom].code}  lista vrednost: {items[pom].value}\n")
+        conn.close()  # close the connection
+
+
+    def ReceiveState():
+        global brWorkera
+        #Receives state    
+        server_socket2.listen()
+        conn, address = server_socket2.accept()
+        while True:
+            dataRecv = conn.recv(4096).decode("utf-8")
+            print("\nstiglo:")
+            print(dataRecv)
+            # receive data stream
+            if not dataRecv:
+                # if data is not received break
+                break
+            print(f"Broj workera: {brWorkera}")
+            if  dataRecv == "ON":
+                print("NOVI WORKER UPALJEN\n")
+                brWorkera +=1 
+                tWorker = Process(target=worker.SaveData())
+                listaWorkera.append(tWorker)
+            else:
+                if  dataRecv == "OFF":
+                    if brWorkera > 1:
+                        listaWorkera.remove(listaWorkera[brWorkera-1])
+                        brWorkera-=1
+                        print(" WORKER UGASEN\n")
+                    else:
+                        print("GRESKA Nema vise workera\n")
+                else:
+                    print("")
+        conn.close()  # close the connection
+        
+
+
+pReceiveItem = Process(target=LoadBalancer.ReceiveItem)
+pReceiveState = Process(target=LoadBalancer.ReceiveState)
+
+pReceiveItem.start()
+pReceiveState.start()
+
+for x in listaWorkera:
+    x.start()

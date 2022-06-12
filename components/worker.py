@@ -5,5 +5,5 @@ def ProcessData(self, description_list):
 
 # Cuva podatke u bazu kada se dataset napuni
 def SaveData():
-    print("Radi")
+    print("Radi worker")
     pass
