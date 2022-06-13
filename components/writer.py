@@ -7,9 +7,8 @@ from models.item import Item
 from multiprocessing import Process
 from threading import Timer
 
-
 client_socket = socket.socket()
-client_socket.connect(('127.0.0.1', 5005))    
+client_socket.connect(('127.0.0.1', 5001))    
 client_socket2 = socket.socket()
 client_socket2.connect(('127.0.0.2', 5000)) 
 
@@ -28,17 +27,19 @@ class Writer:
             client_socket.send(data_string)
             time.sleep(2)
 
-    def PraznaPoruka():
+    def EmprtyMessage():
         msg = ""
         client_socket2.send(msg.encode("utf-8"))
 
     def  SendState():   
         while True:
             try:
-                t = Timer(2.0, Writer.PraznaPoruka)
+                t = Timer(2.0, Writer.EmprtyMessage)
                 t.start()
                 t.join()
-                state = input("Upisi broj za komandu koju zelite:   \n\t1.Upali novi worker\n\t2.Ugasi workera\n\n")
+                state = input("Upisi broj za komandu koju zelite:\n\
+                    1.Upali novi worker\n\
+                    2.Ugasi workera\n\n")
                 t.cancel()
                 if state == "1":
                     print("Upali workera")
@@ -48,14 +49,13 @@ class Writer:
                         print("Ugasi workera")
                         msg = "OFF"
                     else: 
-                        print(f">{state}<")
                         print("Molim Vas unesite samo broj 1 ili 2\n")
                 client_socket2.send(msg.encode("utf-8"))
             except EOFError as e:
                 print(e)            
             
-
+#LoadBalancer.DoLoadBalancer()
 pItemSend = Process(target=Writer.SendItem)
-pStateSend = threading.Thread(target=Writer.SendState)
+tStateSend = threading.Thread(target=Writer.SendState)
 pItemSend.start()
-pStateSend.start()
+tStateSend.start()

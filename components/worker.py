@@ -1,14 +1,24 @@
+from ast import List
+from logging import exception
 import os
 import sqlite3
+import socket
+import pickle
 import threading
+import time
 
+import sys
+sys.path.append('/home/x/Documents/GitHub/RES-2022/')
 from constants.codes import Code
 from constants.data_sets import DataSet, DataSets
 from constants.queries import Queries
 from models.collection_description import CollectionDescription
 from models.description import Description
 from models.worker_property import WorkerProperty
+from multiprocessing import Process
 
+client_socket = socket.socket() 
+server_socket = socket.socket()
 
 class Worker:
     def __init__(self, id: int, status=False, is_available=True):
@@ -29,16 +39,18 @@ class Worker:
             # If worker is off or busy
             return
 
+        Worker.ReaderWorker(self)   #prima zahtev od readera i salje podatke
         self.is_available = False
         self.__SaveLocally(data)
         cd_statuses = self.__EvaluateDataState()
         self.__ProcessData(cd_statuses)
         self.__RemoveCheckedWorkerProperties()
         self.is_available = True
+        self.ReceiveRequest()
 
     # Parse data into local data structure
     def __SaveLocally(self, data: Description):
-        dataset_id = DataSets.index(data.dataset.name)
+        dataset_id = DataSets[data.dataset]
         for item in data.items:
             worker_property = WorkerProperty(item.code, item.value)
             self.collection_descriptions[dataset_id].historical_collection.append(worker_property)
@@ -59,7 +71,7 @@ class Worker:
                 cd_statuses.append(False)
         return cd_statuses
 
-    def __ProcessData(self, cd_statuses: []):
+    def __ProcessData(self, cd_statuses: List):
         for cd, is_ready in zip(self.collection_descriptions, cd_statuses):
             if is_ready:
                 for worker_property in cd.historical_collection:
@@ -147,4 +159,57 @@ class Worker:
             self.status = new_state
 
     def __str__(self):
-        return f'Worker {self.id}: ({"On" if self.status else "Off"}, {"Free" if self.is_available else "Busy"})'
+        return f'Worker {self.id}: ({"On" if self.status else "Off"}, {"Fr__GetLastValueByCodeee" if self.is_available else "Busy"})'
+
+    def ConnectClientSocket(self):
+        global client_socket
+        wID = self.id
+        client_host = '127.0.1.' + (str(wID))
+        client_port = 5001 + wID
+        client_socket.connect((client_host, client_port))
+
+    def ConnectServerSocket(self):
+        global server_socket
+        wID = self.id
+        server_host = '127.0.0.' + (str(6 + wID))
+        server_port = 5999 + self.id
+        server_socket.bind((server_host, server_port))
+        server_socket.listen()
+
+    def ReceiveRequest(self):
+        conn, address = server_socket.accept()
+        pomBr = 0
+        while True:
+            try:
+                dataRecv = conn.recv(4096).decode("utf-8")
+                # receive data stream
+                poruka = "Print Na WORKERU"
+                if pomBr == 0:
+                    pomBr+=1
+                    Worker.ConnectClientSocket(self)
+                if dataRecv == "1":
+                    data_string = pickle.dumps(poruka)
+                    client_socket.send(data_string)
+                elif dataRecv == "2":                
+                    data_string = pickle.dumps(poruka)
+                    client_socket.send(data_string)
+                elif dataRecv == "3":                
+                    data_string = pickle.dumps(poruka)
+                    client_socket.send(data_string)
+                elif dataRecv == "4":
+                    data_string = pickle.dumps(poruka)
+                    client_socket.send(data_string)
+                else:
+                    data_string = pickle.dumps("NEMA DATA")
+                    client_socket.send(data_string)
+            except:
+                data_string = pickle.dumps("GRESKA")
+                client_socket.send(data_string)
+                break
+        conn.close()  # close the connection
+
+    def ReaderWorker(self):
+        Worker.ConnectServerSocket(self)
+        pReceiveRequest = Process(target=Worker.ReceiveRequest(self))
+        pReceiveRequest.start()
+        
