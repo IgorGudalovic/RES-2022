@@ -1,13 +1,14 @@
 from ast import List
-from http import client
+from logging import exception
 import os
 import sqlite3
 import socket
 import pickle
-import string
 import threading
 import time
 
+import sys
+sys.path.append('/home/x/Documents/GitHub/RES-2022/')
 from constants.codes import Code
 from constants.data_sets import DataSet, DataSets
 from constants.queries import Queries
@@ -16,8 +17,8 @@ from models.description import Description
 from models.worker_property import WorkerProperty
 from multiprocessing import Process
 
-workerID = 0
-
+client_socket = socket.socket() 
+server_socket = socket.socket()
 
 class Worker:
     def __init__(self, id: int, status=False, is_available=True):
@@ -160,50 +161,55 @@ class Worker:
     def __str__(self):
         return f'Worker {self.id}: ({"On" if self.status else "Off"}, {"Fr__GetLastValueByCodeee" if self.is_available else "Busy"})'
 
-
-    def ConnectSocket(self, data_string:str):
-        client_host = '127.0.1.'
+    def ConnectClientSocket(self):
+        global client_socket
         wID = self.id
-        client_host = client_host + (str(wID))
+        client_host = '127.0.1.' + (str(wID))
         client_port = 5001 + wID
-        client_socket = socket.socket() 
         client_socket.connect((client_host, client_port))
-        client_socket.send(data_string)
 
-    def ReceiveRequest(self):
+    def ConnectServerSocket(self):
+        global server_socket
         wID = self.id
-        server_host= '127.0.0.'
-        server_host = server_host + (str(6 + wID))
+        server_host = '127.0.0.' + (str(6 + wID))
         server_port = 5999 + self.id
-        server_socket = socket.socket()
         server_socket.bind((server_host, server_port))
         server_socket.listen()
-        conn, address = server_socket.accept()
-        while True:
-            dataRecv = conn.recv(4096).decode("utf-8")
-            print("\nstiglo:")
-            print(dataRecv)
-            # receive data stream
-            poruka = "Print Na WORKERU"
-            if not dataRecv:
-                # if data is not received break
-                break
-            if dataRecv == "1":
-                data_string = pickle.dumps(poruka)
-                Worker.ConnectSocket(data_string)
-            if dataRecv == "2":                
-                data_string = pickle.dumps(poruka)
-                Worker.ConnectSocket(data_string)
-            if dataRecv == "3":                
-                data_string = pickle.dumps(poruka)
-                Worker.ConnectSocket(data_string)
-            if dataRecv == "4":
-                data_string = pickle.dumps(poruka)
-                Worker.ConnectSocket(data_string)
 
+    def ReceiveRequest(self):
+        conn, address = server_socket.accept()
+        pomBr = 0
+        while True:
+            try:
+                dataRecv = conn.recv(4096).decode("utf-8")
+                # receive data stream
+                poruka = "Print Na WORKERU"
+                if pomBr == 0:
+                    pomBr+=1
+                    Worker.ConnectClientSocket(self)
+                if dataRecv == "1":
+                    data_string = pickle.dumps(poruka)
+                    client_socket.send(data_string)
+                elif dataRecv == "2":                
+                    data_string = pickle.dumps(poruka)
+                    client_socket.send(data_string)
+                elif dataRecv == "3":                
+                    data_string = pickle.dumps(poruka)
+                    client_socket.send(data_string)
+                elif dataRecv == "4":
+                    data_string = pickle.dumps(poruka)
+                    client_socket.send(data_string)
+                else:
+                    data_string = pickle.dumps("NEMA DATA")
+                    client_socket.send(data_string)
+            except:
+                data_string = pickle.dumps("GRESKA")
+                client_socket.send(data_string)
+                break
         conn.close()  # close the connection
 
     def ReaderWorker(self):
+        Worker.ConnectServerSocket(self)
         pReceiveRequest = Process(target=Worker.ReceiveRequest(self))
         pReceiveRequest.start()
         
