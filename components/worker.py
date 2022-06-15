@@ -1,8 +1,10 @@
 import os
 import sqlite3
 import threading
+import unittest
+from datetime import datetime
 
-from constants.codes import Code
+from constants.codes import Code, Codes
 from constants.data_sets import DataSet, DataSets
 from constants.queries import Queries
 from models.collection_description import CollectionDescription
@@ -23,7 +25,31 @@ class Worker:
         ]
         self.worker_properties_to_remove = {}
 
+    # Method used in reader to get all data for a specific code and timestamps
+    # Method returns (timestamp(date), WorkerProperty(code, value))
+    def GetData(self, code: str, db_path=None):
+        if code not in Codes:
+            return []
+
+        dataset_id = self.__GetDataSetByCode(code)
+        if db_path is None:
+            db_path = Worker.__GetDatabasePath()
+        with threading.Lock(), sqlite3.connect(db_path) as con:
+            cur = con.cursor()
+            query = Queries.GetData(dataset_id + 1, code)
+            cur.execute(query)
+            records = cur.fetchall()
+
+        data = []
+        if records is not None:
+            for record in records:
+                date = datetime.strptime(record[0], '%Y-%m-%d %H:%M:%S')
+                data.append((date, WorkerProperty(record[1], record[2])))
+
+        return data
+
     # Method for saving data
+    @unittest.skip
     def SaveData(self, data: Description):
         if not self.is_available or not self.status:
             # If worker is off or busy
@@ -36,13 +62,23 @@ class Worker:
         self.__RemoveCheckedWorkerProperties()
         self.is_available = True
 
+    def GetLastValueByCode(self, code: str):
+        try:
+            return self.__GetValue(code)
+        except sqlite3.OperationalError:
+            self.__CreateDatabaseTables()
+            return self.GetLastValueByCode(code)
+
     # Parse data into local data structure
+    @unittest.skip
     def __SaveLocally(self, data: Description):
         dataset_id = DataSets.index(data.dataset.name)
         for item in data.items:
             worker_property = WorkerProperty(item.code, item.value)
             self.collection_descriptions[dataset_id].historical_collection.append(worker_property)
 
+    # Check if any CollectionDescription is ready for saving in database
+    @unittest.skip
     def __EvaluateDataState(self):
         cd_statuses = []
         for cd in self.collection_descriptions:
@@ -59,6 +95,8 @@ class Worker:
                 cd_statuses.append(False)
         return cd_statuses
 
+    # Process any ready CollectionDescriptions
+    @unittest.skip
     def __ProcessData(self, cd_statuses: []):
         for cd, is_ready in zip(self.collection_descriptions, cd_statuses):
             if is_ready:
@@ -69,39 +107,38 @@ class Worker:
                         self.worker_properties_to_remove[cd.id] = worker_property
 
     @staticmethod
-    def __SaveDataInDatabase(worker_property: WorkerProperty, dataset_id: int):
-        db_path = Worker.__GetDatabasePath()
+    @unittest.skip
+    def __SaveDataInDatabase(worker_property: WorkerProperty, dataset_id: int, db_path=None):
+        if db_path is None:
+            db_path = Worker.__GetDatabasePath()
         with threading.Lock(), sqlite3.connect(db_path) as con:
             cur = con.cursor()
             query = Queries.InsertItem(dataset_id + 1, worker_property.code.name, worker_property.worker_value)
             cur.execute(query)
             con.commit()
 
+    # Remove processed data from worker
+    @unittest.skip
     def __RemoveCheckedWorkerProperties(self):
         for cd_id, worker_property in self.worker_properties_to_remove.items():
             self.collection_descriptions[cd_id].historical_collection.remove(worker_property)
         self.worker_properties_to_remove.clear()
 
+    # Check if data can be saved in database
     def __ValidateValue(self, worker_property: WorkerProperty):
         if worker_property.code == Code.CODE_DIGITAL:
             return True
 
-        last_value = self.__GetLastValueByCode(worker_property.code.name)
+        last_value = self.GetLastValueByCode(worker_property.code.name)
         if not last_value:  # No data in database with this code
             return True
 
         new_value = worker_property.worker_value
         return Worker.__CheckDeadband(last_value, new_value)
 
-    def __GetLastValueByCode(self, code: str):
-        try:
-            return self.__GetValue(code)
-        except sqlite3.OperationalError:
-            self.__CreateDatabaseTables()
-            return self.__GetLastValueByCode(code)
-
-    def __GetValue(self, code: str):
-        db_path = Worker.__GetDatabasePath()
+    def __GetValue(self, code: str, db_path=None):
+        if db_path is None:
+            db_path = Worker.__GetDatabasePath()
         with threading.Lock(), sqlite3.connect(db_path) as con:
             cur = con.cursor()
             dataset_id = self.__GetDataSetByCode(code)
@@ -114,8 +151,10 @@ class Worker:
         return record
 
     @staticmethod
-    def __CreateDatabaseTables():
-        db_path = Worker.__GetDatabasePath()
+    @unittest.skip
+    def __CreateDatabaseTables(db_path=None):
+        if db_path is None:
+            db_path = Worker.__GetDatabasePath()
         with threading.Lock(), sqlite3.connect(db_path) as con:
             cur = con.cursor()
             for dataset_id in range(1, 5):
@@ -127,6 +166,7 @@ class Worker:
         base_dir = os.path.dirname(os.path.abspath(__file__))
         return os.path.join(base_dir[0:-11], "database\database.db")
 
+    # Checks if new value is out of deadband of old value
     @staticmethod
     def __CheckDeadband(old_value, new_value):
         difference = abs(old_value - new_value)
@@ -140,11 +180,13 @@ class Worker:
                     self.collection_descriptions[id].dataset.value[1]:
                 return id
 
+    @unittest.skip
     def ChangeState(self, new_state: bool = None):
         if new_state is None:
             self.status = not self.status
         else:
             self.status = new_state
 
+    @unittest.skip
     def __str__(self):
         return f'Worker {self.id}: ({"On" if self.status else "Off"}, {"Free" if self.is_available else "Busy"})'

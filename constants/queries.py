@@ -9,5 +9,9 @@ class Queries:
                                                 where date_created = (select max(date_created) from DATASET_{dataset_id} where code = '{code}')
                                                 and code = '{code}'"""
 
+    GetData = lambda dataset_id, code: f"""select date_created, code, value
+                                            from DATASET_{dataset_id}
+                                            where code = '{code}'"""
+
     InsertItem = lambda dataset_id, code, value: f"""insert into DATASET_{dataset_id} (code, value)
                                                      values ('{code}', {value})"""
