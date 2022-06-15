@@ -31,7 +31,7 @@ class Worker:
         if code not in Codes:
             return []
 
-        dataset_id = self.__GetDataSetByCode(code)
+        dataset_id = self.GetDataSetByCode(code)
         if db_path is None:
             db_path = Worker.__GetDatabasePath()
         with threading.Lock(), sqlite3.connect(db_path) as con:
@@ -62,9 +62,9 @@ class Worker:
         self.__RemoveCheckedWorkerProperties()
         self.is_available = True
 
-    def GetLastValueByCode(self, code: str):
+    def GetLastValueByCode(self, code: str, db_path=None):
         try:
-            return self.__GetValue(code)
+            return self.GetValue(code, db_path)
         except sqlite3.OperationalError:
             self.__CreateDatabaseTables()
             return self.GetLastValueByCode(code)
@@ -101,7 +101,7 @@ class Worker:
         for cd, is_ready in zip(self.collection_descriptions, cd_statuses):
             if is_ready:
                 for worker_property in cd.historical_collection:
-                    if self.__ValidateValue(worker_property):
+                    if self.ValidateValue(worker_property):
                         Worker.__SaveDataInDatabase(worker_property, cd.id)
                     else:
                         self.worker_properties_to_remove[cd.id] = worker_property
@@ -125,23 +125,23 @@ class Worker:
         self.worker_properties_to_remove.clear()
 
     # Check if data can be saved in database
-    def __ValidateValue(self, worker_property: WorkerProperty):
+    def ValidateValue(self, worker_property: WorkerProperty, db_path=None):
         if worker_property.code == Code.CODE_DIGITAL:
             return True
 
-        last_value = self.GetLastValueByCode(worker_property.code.name)
+        last_value = self.GetLastValueByCode(worker_property.code.name, db_path)
         if not last_value:  # No data in database with this code
             return True
 
         new_value = worker_property.worker_value
-        return Worker.__CheckDeadband(last_value, new_value)
+        return Worker.CheckDeadband(last_value, new_value)
 
-    def __GetValue(self, code: str, db_path=None):
+    def GetValue(self, code: str, db_path=None):
         if db_path is None:
             db_path = Worker.__GetDatabasePath()
         with threading.Lock(), sqlite3.connect(db_path) as con:
             cur = con.cursor()
-            dataset_id = self.__GetDataSetByCode(code)
+            dataset_id = self.GetDataSetByCode(code)
             query = Queries.GetLastValue(dataset_id + 1, code)
             cur.execute(query)
             record = cur.fetchone()
@@ -162,19 +162,20 @@ class Worker:
                 cur.execute(query)
 
     @staticmethod
+    @unittest.skip
     def __GetDatabasePath():
         base_dir = os.path.dirname(os.path.abspath(__file__))
         return os.path.join(base_dir[0:-11], "database\database.db")
 
     # Checks if new value is out of deadband of old value
     @staticmethod
-    def __CheckDeadband(old_value, new_value):
+    def CheckDeadband(old_value: [int, float], new_value: [int, float]):
         difference = abs(old_value - new_value)
         if difference > (old_value * 0.02):
             return True
         return False
 
-    def __GetDataSetByCode(self, code: str):
+    def GetDataSetByCode(self, code: str):
         for id in range(0, 4):
             if code == self.collection_descriptions[id].dataset.value[0] or code == \
                     self.collection_descriptions[id].dataset.value[1]:
