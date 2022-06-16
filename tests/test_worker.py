@@ -14,25 +14,24 @@ class TestWorker(unittest.TestCase):
         self.conn = sqlite3.connect('test_database.db')
         cur = self.conn.cursor()
 
-        cur.execute(Queries.CreateDatasetTableQuery(1))
-        cur.execute(Queries.InsertItem(1, 'CODE_ANALOG', 100))
-        cur.execute(Queries.InsertItem(1, 'CODE_DIGITAL', 200))
-
         datetime_now = datetime.datetime.now()
         self.date = datetime.datetime.strptime(
             f'{datetime_now.date()} {datetime_now.hour}:{datetime_now.minute}:{datetime_now.second}',
             '%Y-%m-%d %H:%M:%S')
+
+        cur.execute(Queries.CreateDatasetTableQuery(1))
+        cur.execute(Queries.InsertItem(1, 'CODE_ANALOG', 100, self.date))
+        cur.execute(Queries.InsertItem(1, 'CODE_DIGITAL', 200, self.date))
 
         self.conn.commit()
 
     def tearDown(self):
         cur = self.conn.cursor()
         cur.execute(f"""delete from main.DATASET_1 where main.DATASET_1.value>=0""")
+        self.conn.commit()
         self.conn.close()
         os.remove('test_database.db')
 
-    # For some reason the timestamps of the data that is saved
-    # in the test_database at the start of the tests is 2h behind the current time
     def test_get_data(self):
         actual = self.worker.GetData('CODE_ANALOG', 'test_database.db')
         expected = [(self.date, WorkerProperty(Code.CODE_ANALOG, 100))]
@@ -82,3 +81,7 @@ class TestWorker(unittest.TestCase):
         actual = self.worker.GetDataSetByCode('CODE_ANALOG')
         expected = 0
         self.assertEqual(expected, actual)
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -13,5 +13,4 @@ class Queries:
                                             from DATASET_{dataset_id}
                                             where code = '{code}'"""
 
-    InsertItem = lambda dataset_id, code, value: f"""insert into DATASET_{dataset_id} (code, value)
-                                                     values ('{code}', {value})"""
+    InsertItem = lambda dataset_id, code, value, timestamp=None: f"""insert into DATASET_{dataset_id} (code, value) values ('{code}', {value})""" if timestamp is None else f"""insert into DATASET_{dataset_id} (code, value, date_created) values ('{code}', {value}, '{timestamp}')"""

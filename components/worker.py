@@ -1,7 +1,6 @@
 import os
 import sqlite3
 import threading
-import unittest
 from datetime import datetime
 
 from constants.codes import Code, Codes
@@ -49,8 +48,7 @@ class Worker:
         return data
 
     # Method for saving data
-    @unittest.skip
-    def SaveData(self, data: Description):
+    def SaveData(self, data: Description):  # pragma: no cover
         if not self.is_available or not self.status:
             # If worker is off or busy
             return
@@ -70,16 +68,14 @@ class Worker:
             return self.GetLastValueByCode(code)
 
     # Parse data into local data structure
-    @unittest.skip
-    def __SaveLocally(self, data: Description):
+    def __SaveLocally(self, data: Description):  # pragma: no cover
         dataset_id = DataSets.index(data.dataset.name)
         for item in data.items:
             worker_property = WorkerProperty(item.code, item.value)
             self.collection_descriptions[dataset_id].historical_collection.append(worker_property)
 
     # Check if any CollectionDescription is ready for saving in database
-    @unittest.skip
-    def __EvaluateDataState(self):
+    def __EvaluateDataState(self):  # pragma: no cover
         cd_statuses = []
         for cd in self.collection_descriptions:
             code_1, code_2 = False, False
@@ -96,8 +92,7 @@ class Worker:
         return cd_statuses
 
     # Process any ready CollectionDescriptions
-    @unittest.skip
-    def __ProcessData(self, cd_statuses: []):
+    def __ProcessData(self, cd_statuses: []):  # pragma: no cover
         for cd, is_ready in zip(self.collection_descriptions, cd_statuses):
             if is_ready:
                 for worker_property in cd.historical_collection:
@@ -107,8 +102,7 @@ class Worker:
                         self.worker_properties_to_remove[cd.id] = worker_property
 
     @staticmethod
-    @unittest.skip
-    def __SaveDataInDatabase(worker_property: WorkerProperty, dataset_id: int, db_path=None):
+    def __SaveDataInDatabase(worker_property: WorkerProperty, dataset_id: int, db_path=None):  # pragma: no cover
         if db_path is None:
             db_path = Worker.__GetDatabasePath()
         with threading.Lock(), sqlite3.connect(db_path) as con:
@@ -118,8 +112,7 @@ class Worker:
             con.commit()
 
     # Remove processed data from worker
-    @unittest.skip
-    def __RemoveCheckedWorkerProperties(self):
+    def __RemoveCheckedWorkerProperties(self):  # pragma: no cover
         for cd_id, worker_property in self.worker_properties_to_remove.items():
             self.collection_descriptions[cd_id].historical_collection.remove(worker_property)
         self.worker_properties_to_remove.clear()
@@ -151,8 +144,7 @@ class Worker:
         return record
 
     @staticmethod
-    @unittest.skip
-    def __CreateDatabaseTables(db_path=None):
+    def __CreateDatabaseTables(db_path=None):  # pragma: no cover
         if db_path is None:
             db_path = Worker.__GetDatabasePath()
         with threading.Lock(), sqlite3.connect(db_path) as con:
@@ -162,8 +154,7 @@ class Worker:
                 cur.execute(query)
 
     @staticmethod
-    @unittest.skip
-    def __GetDatabasePath():
+    def __GetDatabasePath():  # pragma: no cover
         base_dir = os.path.dirname(os.path.abspath(__file__))
         return os.path.join(base_dir[0:-11], "database\database.db")
 
@@ -181,13 +172,11 @@ class Worker:
                     self.collection_descriptions[id].dataset.value[1]:
                 return id
 
-    @unittest.skip
-    def ChangeState(self, new_state: bool = None):
+    def ChangeState(self, new_state: bool = None):  # pragma: no cover
         if new_state is None:
             self.status = not self.status
         else:
             self.status = new_state
 
-    @unittest.skip
-    def __str__(self):
+    def __str__(self):  # pragma: no cover
         return f'Worker {self.id}: ({"On" if self.status else "Off"}, {"Free" if self.is_available else "Busy"})'
