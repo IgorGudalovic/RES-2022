@@ -172,7 +172,7 @@ class Worker:
         global server_socket
         wID = self.id
         server_host = '127.0.0.' + (str(6 + wID))
-        server_port = 5999 + self.id
+        server_port = 5999 + wID
         server_socket.bind((server_host, server_port))
         server_socket.listen()
 
@@ -181,27 +181,22 @@ class Worker:
         pomBr = 0
         while True:
             try:
-                dataRecv = conn.recv(4096).decode("utf-8")
-                # receive data stream
-                poruka = "Print Na WORKERU"
+                dataRecv = pickle.loads(conn.recv(4096))# on primi objekat Request-a
+                #prvi put kad primi request napravi klijenta za slanje na reader
                 if pomBr == 0:
                     pomBr+=1
                     Worker.ConnectClientSocket(self)
-                if dataRecv == "1":
-                    data_string = pickle.dumps(poruka)
-                    client_socket.send(data_string)
-                elif dataRecv == "2":                
-                    data_string = pickle.dumps(poruka)
-                    client_socket.send(data_string)
-                elif dataRecv == "3":                
-                    data_string = pickle.dumps(poruka)
-                    client_socket.send(data_string)
-                elif dataRecv == "4":
-                    data_string = pickle.dumps(poruka)
-                    client_socket.send(data_string)
-                else:
-                    data_string = pickle.dumps("NEMA DATA")
-                    client_socket.send(data_string)
+
+
+                #dobavi value po vremenu
+                #if data[0] == "Historical":
+                
+                #dobavi value po kodu
+                #elif data[0] == "Code":
+
+                #posalji dobavljen value
+                #data_string = pickle.dumps(dataSend)
+                #client_socket.send(data_string)
             except:
                 data_string = pickle.dumps("GRESKA")
                 client_socket.send(data_string)

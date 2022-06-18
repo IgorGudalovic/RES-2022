@@ -4,11 +4,15 @@ import sys
 import time
 sys.path.append('/home/x/Documents/GitHub/RES-2022/')
 from multiprocessing import Process
-from threading import Timer
 from threading import Thread
 import load_balancer
+from models.historical_value import HistoricalValue
+from models.request import Request
+from datetime import datetime
 
 iterator = 0
+pomBr = 0
+
 
 class Reader:
     pomBrWorkera = getattr(load_balancer,'brojIstorijeWorkera')
@@ -34,14 +38,7 @@ class Reader:
                     Reader.client_port = Reader.client_port + Reader.brojacAktivnihWorkera
                     Reader.server_host = Reader.server_host[:-1] + ("% s" % Reader.brojacAktivnihWorkera)
                     Reader.server_port = Reader.server_port + Reader.brojacAktivnihWorkera
-                    # print(Reader.client_host)
-                    # print(Reader.client_port)
-                    # print(Reader.server_host)
-                    # print(Reader.server_port)
                     iterator+=1
-
-
-            
 
     def ReceiveData():
         #Receives item
@@ -54,6 +51,7 @@ class Reader:
             # receive data stream
             try:
                 data = pickle.loads(dataRecv)
+                print("Vrednost je:")
                 print(data)
             except:
                 if not data:
@@ -61,44 +59,65 @@ class Reader:
                     break
         conn.close()  # close the connection
 
-    
-    def EmprtyMessage():
-        print("")
 
     def  RequestCode():
-        client_socket = socket.socket()
-        client_socket.connect((Reader.client_host, Reader.client_port))  
+        global pomBr
+        if pomBr==0:
+            client_socket = socket.socket()
+            client_socket.connect((Reader.client_host, Reader.client_port))
+            pomBr+=1
         while True:
-            print("CHOOSE CODE")
-            try:
-                t = Timer(2.0, Reader.EmprtyMessage)
-                t.start()
-                t.join()
-                code = input("Upisi broj za CODE koju zelite:\n\
-                    1.ANALOG/DIGITAL\n\
-                    2.CUSTOM/LIMITSET\n\
-                    3.SINGLENODE/MULTIPLENODE\n\
-                    4.CONSUMER/SOURCE\n")
-                t.cancel()
-                if code == "1":
-                    print("ANALOG/DIGITAL")
-                    msg = "1"
-                elif code == "2":
-                    print("CUSTOM/LIMITSET")
-                    msg = "2"
-                elif code == "3":
-                    print("SINGLENODE/MULTIPLENODE")
-                    msg = "3"
-                elif code == "4":
-                    print("CONSUMER/SOURCE")
-                    msg = "4"
-                elif code!= "":
-                    print("Molim Vas unesite samo broj 1 ili 2\n")
-                client_socket.send(msg.encode("utf-8"))
-                print("poslao")
-                time.sleep(1)
-            except EOFError as e:
-                print("")
+            print("Upisi broj za opciju po kojoj zelite da nadjete vrednost:")
+            print("1.Historical")#po vremenskom intervalu
+            print("2.Code")#po kodu
+            meni = input()
+            if meni == "1":
+                code = Reader.codeSelectionFunction()
+                timeFrom = Reader.timeFromFunction ()
+                timeTo = Reader.timeToFunction()
+                
+                hv = HistoricalValue(timeFrom,timeTo,code)
+                req = Request("Historical", hv)
+                msg = pickle.dumps(req)
+            if meni == "2":
+                code = Reader.codeSelectionFunction()
+                req = Request("Code", code)
+                msg = pickle.dumps(req)
+            else:
+                Reader.RequestCode
+            client_socket.send(msg)
+            print("poslao")
+            time.sleep(1)
+
+    #zastita unosa za code
+    def codeSelectionFunction():
+        code = input("Upisi broj za CODE koju zelite:\n\
+                1.ANALOG/DIGITAL\n\
+                2.CUSTOM/LIMITSET\n\
+                3.SINGLENODE/MULTIPLENODE\n\
+                4.CONSUMER/SOURCE\n")
+        if code!="1" and code!="2" and code!="3" and code!="4":
+            Reader.codeSelectionFunction()
+        return code
+    #zastita unosa za vreme1
+    def timeFromFunction():
+        timeFrom = input("Unesi vremenski interval u formatu Y-m-d H:M:S \nod:")
+        try:
+            date = datetime.strptime(timeFrom, '%Y-%m-%d %H:%M:%S')
+            return date
+        except:
+            print("greska")
+            Reader.timeFromFunction()                    
+
+    #zastita unosa za vreme2
+    def timeToFunction():
+        timeTo = input("do:")
+        try:
+            date = datetime.strptime(timeTo, '%Y-%m-%d %H:%M:%S')
+            return date
+        except:
+            print("greska")
+            Reader.timeToFunction()
 
 
 pReceiveData = Process(target=Reader.ReceiveData)
