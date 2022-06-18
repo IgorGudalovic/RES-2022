@@ -39,14 +39,14 @@ class Worker:
             # If worker is off or busy
             return
 
-        Worker.ReaderWorker(self)   #prima zahtev od readera i salje podatke
         self.is_available = False
         self.__SaveLocally(data)
         cd_statuses = self.__EvaluateDataState()
         self.__ProcessData(cd_statuses)
         self.__RemoveCheckedWorkerProperties()
         self.is_available = True
-        self.ReceiveRequest()
+        Worker.ReaderWorker(self)   #prima zahtev od readera i salje podatke
+
 
     # Parse data into local data structure
     def __SaveLocally(self, data: Description):

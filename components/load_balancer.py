@@ -89,11 +89,16 @@ class LoadBalancer:
             if  dataRecv == "ON":
                 print("NOVI WORKER UPALJEN\n")                
                 worker = Worker(brWorkera, True, True)
-                tWorker = Process(target=Worker.SaveData(worker,desc))
+                tWorker = Process(target=Worker.SaveData, args=(worker,desc))
                 listaAktivnihWorkera.append(tWorker)
                 brojIstorijeWorkera +=1
                 brWorkera +=1 
-                WorkerON()
+                br = 0
+                while br<len(listaAktivnihWorkera):
+                    
+                    print(f"Upaljen worker: {br}")
+                    listaAktivnihWorkera[br].start() 
+                    br+=1           
             else:
                 if  dataRecv == "OFF":
                     if brWorkera > 1:
@@ -105,13 +110,7 @@ class LoadBalancer:
                 else:
                     print("")
         conn.close()  # close the connection
-
-        def WorkerON():
-            br = 0
-            for x in listaAktivnihWorkera:
-                br+=1
-                print(f"Uapljen worker: {br}")
-                x.start()
+           
         
 if __name__ == "__main__":  # ovo ispod se nece pozvati pri importovanju
     pReceiveItem = Process(target=LoadBalancer.ReceiveItem)
