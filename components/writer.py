@@ -1,6 +1,6 @@
 import sys
 import threading
-sys.path.append('/home/x/Documents/GitHub/RES-2022/')
+sys.path.append('C:/Users/Ema/OneDrive/Dokumenti/GitHub/RES-2022')
 import socket, pickle, time, random
 import constants.codes as codes
 from models.item import Item
@@ -53,9 +53,9 @@ class Writer:
                 client_socket2.send(msg.encode("utf-8"))
             except EOFError as e:
                 print(e)            
-            
-#LoadBalancer.DoLoadBalancer()
-pItemSend = Process(target=Writer.SendItem)
-tStateSend = threading.Thread(target=Writer.SendState)
-pItemSend.start()
-tStateSend.start()
+if __name__ == '__main__':           
+    #LoadBalancer.DoLoadBalancer()
+    pItemSend = Process(target=Writer.SendItem)
+    tStateSend = threading.Thread(target=Writer.SendState)
+    pItemSend.start()
+    tStateSend.start()

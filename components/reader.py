@@ -1,12 +1,15 @@
 # Koristi Workere da bi citao podatke iz baze
+from http import client
 import socket,pickle
 import sys
 import time
-sys.path.append('/home/x/Documents/GitHub/RES-2022/')
+sys.path.append('C:/Users/Ema/OneDrive/Dokumenti/GitHub/RES-2022')
 from multiprocessing import Process
 from threading import Timer
 from threading import Thread
 import load_balancer
+import psutil
+
 
 iterator = 0
 
@@ -16,16 +19,17 @@ class Reader:
     client_port = 5999
 
 
-    server_host = '127.0.1.1'
-    server_port = 5001
+    server_host = '127.0.2.0'
+    server_port = 6001
 
     brojacAktivnihWorkera = getattr(load_balancer,'brWorkera')
-    def DoReader(): 
+    def DoReader():
         if Reader.pomBrWorkera > Reader.brojacAktivnihWorkera: #onda se smanjio broj workera   
                 Reader.client_host = Reader.client_host[:-1] + ("% s" % (Reader.brojacAktivnihWorkera-1)) # ili str(brojacProcesa)  ISPRAVI KAD ODUZIMAS I DODAJES
                 Reader.client_port = Reader.client_port - Reader.brojacAktivnihWorkera
                 Reader.server_host = Reader.server_host[:-1] + ("% s" % (Reader.brojacAktivnihWorkera-1))
-                Reader.server_port = Reader.server_port - Reader.brojacAktivnihWorkera              
+                Reader.server_port = Reader.server_port - Reader.brojacAktivnihWorkera 
+
 
         else:
             global iterator
@@ -34,16 +38,17 @@ class Reader:
                     Reader.client_port = Reader.client_port + Reader.brojacAktivnihWorkera
                     Reader.server_host = Reader.server_host[:-1] + ("% s" % Reader.brojacAktivnihWorkera)
                     Reader.server_port = Reader.server_port + Reader.brojacAktivnihWorkera
-                    # print(Reader.client_host)
-                    # print(Reader.client_port)
-                    # print(Reader.server_host)
-                    # print(Reader.server_port)
+                    print(Reader.client_host)
+                    print(Reader.client_port)
+                    print(Reader.server_host)
+                    print(Reader.server_port)
                     iterator+=1
 
 
             
 
     def ReceiveData():
+        
         #Receives item
         server_socket = socket.socket()
         server_socket.bind((Reader.server_host, Reader.server_port))
@@ -109,3 +114,4 @@ tRequestCode.start()
 while True:
     time.sleep(2)
     Reader.DoReader()
+        

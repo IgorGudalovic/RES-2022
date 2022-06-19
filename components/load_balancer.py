@@ -1,6 +1,6 @@
 import socket,pickle
 import sys
-sys.path.append('/home/x/Documents/GitHub/RES-2022/')
+sys.path.append('C:/Users/Ema/OneDrive/Dokumenti/GitHub/RES-2022')
 from models.item import Item
 from components.worker import Worker
 from multiprocessing import Process

@@ -164,9 +164,17 @@ class Worker:
     def ConnectClientSocket(self):
         global client_socket
         wID = self.id
-        client_host = '127.0.1.' + (str(wID))
-        client_port = 5001 + wID
-        client_socket.connect((client_host, client_port))
+        #wID+=1
+        client_host = '127.0.2.' + (str(wID))
+        client_port = 6001 + wID
+        print(client_host, client_port )
+        
+        
+        try:
+            client_socket.connect((client_host, client_port))
+        except socket.error as e:
+            print()
+            print("NECE DA SE KONETUJE")
 
     def ConnectServerSocket(self):
         global server_socket
