@@ -15,15 +15,15 @@ pomBr = 0
 
 
 class Reader:
-    pomBrWorkera = getattr(load_balancer,'brojIstorijeWorkera')
     client_host = '127.0.0.7'
     client_port = 5999
-
 
     server_host = '127.0.1.1'
     server_port = 5001
 
+    pomBrWorkera = getattr(load_balancer,'brojIstorijeWorkera')
     brojacAktivnihWorkera = getattr(load_balancer,'brWorkera')
+
     def DoReader(): 
         if Reader.pomBrWorkera > Reader.brojacAktivnihWorkera: #onda se smanjio broj workera   
                 Reader.client_host = Reader.client_host[:-1] + ("% s" % (Reader.brojacAktivnihWorkera-1)) # ili str(brojacProcesa)  ISPRAVI KAD ODUZIMAS I DODAJES
@@ -40,15 +40,28 @@ class Reader:
                     Reader.server_port = Reader.server_port + Reader.brojacAktivnihWorkera
                     iterator+=1
 
+    def CreateServerSocket():
+        try:            
+            server_socket = socket.socket()
+            server_socket.bind((Reader.server_host, Reader.server_port))
+            server_socket.listen()
+            conn, address = server_socket.accept()
+            return conn
+        except:
+            exit()
+
+    def CreateClientSocket():
+        try:
+            client_socket = socket.socket()
+            client_socket.connect((Reader.client_host, Reader.client_port))
+            return client_socket
+        except:
+            exit()
+
     def ReceiveData():
-        #Receives item
-        server_socket = socket.socket()
-        server_socket.bind((Reader.server_host, Reader.server_port))
-        server_socket.listen()
-        conn, address = server_socket.accept()
+        conn = Reader.CreateServerSocket()
         while True:
             dataRecv = conn.recv(4096)
-            # receive data stream
             try:
                 data = pickle.loads(dataRecv)
                 print("Vrednost je:")
@@ -57,37 +70,41 @@ class Reader:
                 if not data:
                     # if data is not received break
                     break
-        conn.close()  # close the connection
-
+        conn.close()
 
     def  RequestCode():
         global pomBr
         if pomBr==0:
-            client_socket = socket.socket()
-            client_socket.connect((Reader.client_host, Reader.client_port))
+            client_socket = Reader.CreateClientSocket()
             pomBr+=1
         while True:
-            print("Upisi broj za opciju po kojoj zelite da nadjete vrednost:")
-            print("1.Historical")#po vremenskom intervalu
-            print("2.Code")#po kodu
-            meni = input()
-            if meni == "1":
-                code = Reader.codeSelectionFunction()
-                timeFrom = Reader.timeFromFunction ()
-                timeTo = Reader.timeToFunction()
-                
-                hv = HistoricalValue(timeFrom,timeTo,code)
-                req = Request("Historical", hv)
-                msg = pickle.dumps(req)
-            if meni == "2":
-                code = Reader.codeSelectionFunction()
-                req = Request("Code", code)
-                msg = pickle.dumps(req)
-            else:
-                Reader.RequestCode
+            msg = Reader.optionInput()
             client_socket.send(msg)
-            print("poslao")
-            time.sleep(1)
+            print("poslao requset")
+
+    #zastita unosa za biranje requesta
+    def optionInput():
+        print("Upisi broj za opciju po kojoj zelite da nadjete vrednost:")
+        print("1.Historical")#po vremenskom intervalu
+        print("2.Code")#po kodu
+        meni = input()
+        if meni == "1":
+            code = Reader.codeSelectionFunction()
+            timeFrom = Reader.timeFromFunction ()
+            timeTo = Reader.timeToFunction()
+            
+            hv = HistoricalValue(timeFrom,timeTo,code)
+            req = Request("Historical", hv)
+            msg = pickle.dumps(req)
+            return msg
+        if meni == "2":
+            code = Reader.codeSelectionFunction()
+            req = Request("Code", code)
+            msg = pickle.dumps(req)
+            return msg
+        else:
+            print("Molim Vas unesite broj 1 ili 2")
+            Reader.optionInput()
 
     #zastita unosa za code
     def codeSelectionFunction():
