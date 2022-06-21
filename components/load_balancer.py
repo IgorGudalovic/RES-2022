@@ -15,7 +15,26 @@ descList = []
 descItemList = []
 descID = 0
 
-class LoadBalancer:       
+class LoadBalancer: 
+          
+    def CreateServerSocket1():
+        try:            
+            server_socket = socket.socket()
+            server_socket.bind(('127.0.0.1', 5001))
+            server_socket.listen()
+            conn, address = server_socket.accept()
+            return conn
+        except:
+            exit()
+    def CreateServerSocket2():
+        try:            
+            server_socket = socket.socket()
+            server_socket.bind(('127.0.0.2', 5000))
+            server_socket.listen()
+            conn, address = server_socket.accept()
+            return conn
+        except:
+            exit()
 
     def ReceiveItem():
             #Receives item

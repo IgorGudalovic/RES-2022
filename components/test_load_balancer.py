@@ -6,6 +6,7 @@ from models.description import Description
 from constants.codes import Code
 from models.item import Item
 from components.load_balancer import descID
+import socket
 
 class TestLoadBalancer(unittest.TestCase):
     
@@ -19,11 +20,21 @@ class TestLoadBalancer(unittest.TestCase):
         actual_description = LoadBalancer.ForwardDataPrepare(item1)
         self.assertEqual(description1, actual_description)
         
-
+    def test_connect1_ok(self):        
+        socket1 = LoadBalancer.CreateServerSocket1()
+        self.assertEqual(type(socket.socket()), type(socket1))
         
+    def test_connect1_wrong(self):        
+        socket1 = LoadBalancer.CreateServerSocket1()
+        self.assertNotEqual(type(socket.socket()), type(socket1))    
         
+    def test_connect2_ok(self):        
+        socket1 = LoadBalancer.CreateServerSocket2()
+        self.assertEqual(type(socket.socket()), type(socket1))
         
-
+    def test_connect2_wrong(self):        
+        socket1 = LoadBalancer.CreateServerSocket2()
+        self.assertNotEqual(type(socket.socket()), type(socket1))                  
 
 if __name__ == '__main__':
     unittest.main()
