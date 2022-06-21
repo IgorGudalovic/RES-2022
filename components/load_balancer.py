@@ -80,10 +80,18 @@ class LoadBalancer:
         description = Description(descID, descItemList, dataset)
         return description
 
+    #bafer radi na principu FIFO
+    def Buffer():
+        global descList
+        try:
+            desc = descList.pop(0)
+            return desc
+        except:
+            print("Descritpion lista je prazna")
 
     def ReceiveState():
         global brWorkera
-        global desc
+        global descList
         global brojIstorijeWorkera
         conn = LoadBalancer.CreateServerSocket2()
         while True:
@@ -97,6 +105,7 @@ class LoadBalancer:
             if  dataRecv == "ON":
                 print("NOVI WORKER UPALJEN\n")                
                 worker = Worker(brWorkera, True, True)
+                desc = LoadBalancer.Buffer()
                 tWorker = Process(target=Worker.SaveData, args=(worker,desc))
                 listaAktivnihWorkera.append(tWorker)
                 brojIstorijeWorkera +=1
