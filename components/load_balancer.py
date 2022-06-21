@@ -16,20 +16,33 @@ descItemList = []
 descID = 0
 
 class LoadBalancer:       
+    def CreateServerSocket1():
+        try:            
+            server_socket = socket.socket()
+            server_socket.bind(('127.0.0.1', 5001))
+            server_socket.listen()
+            conn, address = server_socket.accept()
+            return conn
+        except:
+            exit()
+    def CreateServerSocket2():
+        try:            
+            server_socket = socket.socket()
+            server_socket.bind(('127.0.0.2', 5000))
+            server_socket.listen()
+            conn, address = server_socket.accept()
+            return conn
+        except:
+            exit()
 
     def ReceiveItem():
-            #Receives item
-        server_socket = socket.socket()
-        server_socket.bind(('127.0.0.1', 5001))
-        server_socket.listen()
         items = []
         id = 0        
-        conn, address = server_socket.accept()
+        conn = LoadBalancer.CreateServerSocket1()
         while True:
             id +=1
             dataRecv = conn.recv(4096)
-            print("primio poruku")
-            # receive data stream
+            print("primio Item")
             data = pickle.loads(dataRecv)   
             if not data:
                 # if data is not received break
@@ -72,16 +85,11 @@ class LoadBalancer:
         global brWorkera
         global desc
         global brojIstorijeWorkera
-        server_socket2 = socket.socket()
-        server_socket2.bind(('127.0.0.2', 5000))
-        server_socket2.listen()
-        #Receives state    
-        conn, address = server_socket2.accept()
+        conn = LoadBalancer.CreateServerSocket2()
         while True:
             dataRecv = conn.recv(4096).decode("utf-8")
-            print("\nstiglo:")
+            print("\nStiglo:")
             print(dataRecv)
-            # receive data stream
             if not dataRecv:
                 # if data is not received break
                 break
@@ -93,23 +101,22 @@ class LoadBalancer:
                 listaAktivnihWorkera.append(tWorker)
                 brojIstorijeWorkera +=1
                 brWorkera +=1 
+
                 br = 0
-                while br<len(listaAktivnihWorkera):
-                    
+                while br<len(listaAktivnihWorkera):                    
                     print(f"Upaljen worker: {br}")
                     listaAktivnihWorkera[br].start() 
-                    br+=1           
-            else:
-                if  dataRecv == "OFF":
-                    if brWorkera > 1:
-                        listaAktivnihWorkera.remove(listaAktivnihWorkera[brWorkera-1])
-                        brWorkera-=1
-                        print(" WORKER UGASEN\n")
-                    else:
-                        print("GRESKA Nema vise workera\n")
+                    br+=1
+
+            elif  dataRecv == "OFF":
+                if brWorkera > 1:
+                    listaAktivnihWorkera.remove(listaAktivnihWorkera[brWorkera-1])
+                    brWorkera-=1
+                    print(" WORKER UGASEN\n")
                 else:
-                    print("")
-        conn.close()  # close the connection
+                    print("GRESKA Nema vise workera\n")
+
+        conn.close()
            
         
 if __name__ == "__main__":  # ovo ispod se nece pozvati pri importovanju

@@ -1,3 +1,4 @@
+from ast import List
 import os
 import sqlite3
 import socket
@@ -65,6 +66,7 @@ class Worker:
         cd_statuses = self.__EvaluateDataState()
         self.__ProcessData(cd_statuses)
         self.__RemoveCheckedWorkerProperties()
+        Worker.ReaderWorker()
         self.is_available = True
 
     def GetLastValueByCode(self, code: str, db_path=None):
@@ -99,7 +101,7 @@ class Worker:
         return cd_statuses
 
     # Process any ready CollectionDescriptions
-    def __ProcessData(self, cd_statuses: list):  # pragma: no cover
+    def __ProcessData(self, cd_statuses: List):  # pragma: no cover
         for cd, is_ready in zip(self.collection_descriptions, cd_statuses):
             if is_ready:
                 for worker_property in cd.historical_collection:
@@ -193,37 +195,48 @@ class Worker:
         wID = self.id
         client_host = '127.0.1.' + (str(wID))
         client_port = 5001 + wID
-        client_socket.connect((client_host, client_port))
+        try:
+            client_socket.connect((client_host, client_port))
+            return client_socket
+        except:
+            exit()
 
     def ConnectServerSocket(self):
         global server_socket
         wID = self.id
         server_host = '127.0.0.' + (str(6 + wID))
         server_port = 5999 + wID
-        server_socket.bind((server_host, server_port))
-        server_socket.listen()
+        try:
+            server_socket.bind((server_host, server_port))
+            server_socket.listen()
+            conn, address = server_socket.accept()
+            return conn
+        except:
+            exit()
 
     def ReceiveRequest(self):
-        conn, address = server_socket.accept()
+        conn = Worker.ConnectServerSocket()
         pomBr = 0
         while True:
             try:
                 dataRecv = pickle.loads(conn.recv(4096))# on primi objekat Request-a
+                msg = pickle.loads(dataRecv)
                 #prvi put kad primi request napravi klijenta za slanje na reader
                 if pomBr == 0:
                     pomBr+=1
-                    Worker.ConnectClientSocket(self)
-
+                    client_socket = Worker.ConnectClientSocket(self)
 
                 #dobavi value po vremenu
-                #if data[0] == "Historical":
+                if msg.option == "Historical":
+                    print()
                 
                 #dobavi value po kodu
-                #elif data[0] == "Code":
-
+                elif msg.option == "Code":
+                    value = Worker.GetLastValueByCode(msg.data)
+                    
                 #posalji dobavljen value
-                #data_string = pickle.dumps(dataSend)
-                #client_socket.send(data_string)
+                data_string = pickle.dumps(value)
+                client_socket.send(data_string)
             except:
                 data_string = pickle.dumps("GRESKA")
                 client_socket.send(data_string)
@@ -231,7 +244,6 @@ class Worker:
         conn.close()  # close the connection
 
     def ReaderWorker(self):
-        Worker.ConnectServerSocket(self)
         pReceiveRequest = Process(target=Worker.ReceiveRequest(self))
         pReceiveRequest.start()
         
