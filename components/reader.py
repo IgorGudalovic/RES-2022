@@ -60,7 +60,7 @@ class Reader:
         conn.close()  # close the connection
 
 
-    def  RequestCode():
+    def RequestCode():
         global pomBr
         if pomBr==0:
             client_socket = socket.socket()
@@ -100,10 +100,18 @@ class Reader:
             Reader.codeSelectionFunction()
         return code
     #zastita unosa za vreme1
+    
     def timeFromFunction():
-        timeFrom = input("Unesi vremenski interval u formatu Y-m-d H:M:S \nod:")
+        timeFrom = input("Unesi vremenski interval u formatu Y-m-d H:M:S \nod:")        
         try:
             date = datetime.strptime(timeFrom, '%Y-%m-%d %H:%M:%S')
+            datenow = datetime.now()
+            if(date>datenow):
+                print("Datum mora biti takav da je prosao")
+                Reader.timeFromFunction()
+            if(date.year < datetime.now().year and date.month < datetime.now().month and date.day < datetime.now().day):
+                print("Format nije ispravan")
+                Reader.timeFromFunction()                                              
             return date
         except:
             print("greska")
@@ -114,6 +122,13 @@ class Reader:
         timeTo = input("do:")
         try:
             date = datetime.strptime(timeTo, '%Y-%m-%d %H:%M:%S')
+            datenow = datetime.now()
+            if(date>datenow):
+                print("Datum mora biti takav da je prosao")
+                Reader.timeFromFunction()
+            if(date.year < datetime.now().year and date.month < datetime.now().month and date.day < datetime.now().day):
+                print("Format nije ispravan")
+                Reader.timeFromFunction() 
             return date
         except:
             print("greska")
