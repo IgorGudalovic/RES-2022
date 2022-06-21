@@ -2,7 +2,7 @@
 import socket,pickle
 import sys
 import time
-sys.path.append('/home/x/Documents/GitHub/RES-2022/')
+sys.path.append('D:/GITHUB/RESProjekat3/RES-2022')
 from multiprocessing import Process
 from threading import Thread
 import load_balancer

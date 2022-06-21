@@ -1,6 +1,6 @@
 import socket,pickle
 import sys
-sys.path.append('/home/x/Documents/GitHub/RES-2022/')
+sys.path.append('D:/GITHUB/RESProjekat3/RES-2022')
 from models.item import Item
 from components.worker import Worker
 from multiprocessing import Process
@@ -61,7 +61,6 @@ class LoadBalancer:
             dataset = 3
         if item.code == Code.CODE_CONSUMER or item.code == Code.CODE_SOURCE:
             dataset = 4
-
         #items 
         descItemList.append(item)
         description = Description(descID, descItemList, dataset)

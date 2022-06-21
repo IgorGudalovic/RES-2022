@@ -4,7 +4,7 @@ import socket
 import pickle
 import threading
 import sys
-sys.path.append('/home/x/Documents/GitHub/RES-2022/')
+sys.path.append('D:/GITHUB/RESProjekat3/RES-2022')
 
 from constants.codes import Code, Codes
 from constants.data_sets import DataSet, DataSets
