@@ -1,13 +1,11 @@
 import sys
 import threading
-sys.path.append('D:\GITHUB\RESProjekat3\RES-2022')
+sys.path.append('/home/x/Documents/GitHub/RES-2022/')
 import socket, pickle, time, random
 import constants.codes as codes
 from models.item import Item
 from multiprocessing import Process
 from threading import Timer
-#from components.load_balancer import LoadBalancer
-
 
 client_socket = socket.socket()
 client_socket.connect(('127.0.0.1', 5001))    
@@ -40,8 +38,8 @@ class Writer:
                 t.start()
                 t.join()
                 state = input("Upisi broj za komandu koju zelite:\n\
-                                1.Upali novi worker\n\
-                                2.Ugasi workera\n\n")
+                    1.Upali novi worker\n\
+                    2.Ugasi workera\n\n")
                 t.cancel()
                 if state == "1":
                     print("Upali workera")
@@ -51,7 +49,6 @@ class Writer:
                         print("Ugasi workera")
                         msg = "OFF"
                     else: 
-                        print(f">{state}<")
                         print("Molim Vas unesite samo broj 1 ili 2\n")
                 client_socket2.send(msg.encode("utf-8"))
             except EOFError as e:
@@ -59,6 +56,6 @@ class Writer:
             
 #LoadBalancer.DoLoadBalancer()
 pItemSend = Process(target=Writer.SendItem)
-pStateSend = threading.Thread(target=Writer.SendState)
+tStateSend = threading.Thread(target=Writer.SendState)
 pItemSend.start()
-pStateSend.start()
+tStateSend.start()
