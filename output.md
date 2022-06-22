@@ -1,6 +1,7 @@
 Razvoj Elektroenergetskog softvera<br>
 Predmeni zadatak 3
 ========
+<br><br>
 1.  **Uvod**
 
 Projektni zadatak 3 simulira rad I komunikaciju Load Balacner modula
