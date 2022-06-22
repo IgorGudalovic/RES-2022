@@ -217,7 +217,7 @@ izvalči pdoatke iz baze.
 Description u podatak tipa CollectionDescription.
 
 >def SaveData(self, data: Description) - čuva dobijene podatke od load
-balancera
+balancera.
 
 >def \_\_EvaluateDataState(self)- provjerava da li je dataset popunjen,
 da li su su obe vrednosti u strukturi pre snimanja u bazi.
@@ -232,15 +232,15 @@ podatak izlazi iz DeadBend-a.
 >def GetValue(self, code: str, db_path=None)-varaća posljednju vrednost.
 
 >def \_\_RemoveCheckedWorkerProperties(self) - metoda za brisanje
-nepotrebnih podataka, koji nisu prosli kroz validaciju
+nepotrebnih podataka, koji nisu prosli kroz validaciju.
 
 >def \_\_CreateDatabaseTables(db_path=None) -metoda za kreiranje tabela
-baze podataka
+baze podataka.
 
 >def \_\_GetDatabasePath() - metoda za genersianje putanje.
 
 >def CheckDeadband(old_value: int or float, new_value: int or float) -
-proverava da li je razlika izmedju stare i nove vrijednosti veća od 2%
+proverava da li je razlika izmedju stare i nove vrijednosti veća od 2%.
 
 >def GetDataSetByCode(self, code: str) - metoda koja vraća kojem datasetu
 pripada neki code.
