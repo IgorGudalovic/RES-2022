@@ -64,16 +64,16 @@ writer komponente i kreira se dataSet u zavisnosti od code-a.
 
 Raspored kodova i dataSet-ova:
 
-DataSet1: CODE_ANALOG\
+>DataSet1: CODE_ANALOG\
 CODE_DIGITAL
 
-DataSet2: CODE_CUSTOM\
+>DataSet2: CODE_CUSTOM\
 CODE_LIMITSET
 
-DataSet3: CODE_SINGLENOE\
+>DataSet3: CODE_SINGLENOE\
 CODE_MULTIPLENODE
 
-DataSet4: CODE_CONSUMER\
+>DataSet4: CODE_CONSUMER\
 CODE_SOURCE
 
 **Worker** je komponenta čiji je zadatak obrada podataka dobijenih od
