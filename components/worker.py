@@ -13,7 +13,6 @@ from models.description import Description
 from models.worker_property import WorkerProperty
 from multiprocessing import Process
 from datetime import datetime
-from models.item import Item
 
 client_socket = socket.socket() 
 server_socket = socket.socket()
