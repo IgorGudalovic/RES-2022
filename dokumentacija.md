@@ -161,7 +161,7 @@ Metode:
 
 <br><br>4.2. Klasa Writer
 
-:class Writer:
+>class Writer:
 
 Metode:
 
