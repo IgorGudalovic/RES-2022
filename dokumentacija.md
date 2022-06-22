@@ -134,7 +134,7 @@ Dijagram aktivnosti sistema
 
 <br>4.1 Klasa Load Balancer
 
-class LoadBalancer:
+:class LoadBalancer:
 
 Metode:
 
@@ -160,7 +160,7 @@ Metode:
 
 <br><br>4.2. Klasa Writer
 
-class Writer:
+:class Writer:
 
 Metode:
 
@@ -178,6 +178,7 @@ Metode:
 
 >class Reader:
 
+Metode:
 >def DoReader():
 
 > def CreateServerSocket() - otvara serversku konekciju ka worker
@@ -208,7 +209,7 @@ Metode:
 
 4.4 Klasa Worker
 
-class Worker:
+>class Worker:
 
 Metode:
 
