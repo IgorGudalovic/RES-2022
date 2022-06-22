@@ -21,21 +21,21 @@ class Reader:
 
     pomBrWorkera = getattr(load_balancer,'brojIstorijeWorkera')
     brojacAktivnihWorkera = getattr(load_balancer,'brWorkera')
-
-    def DoReader(self):
-        if self.pomBrWorkera > self.brojacAktivnihWorkera: #onda se smanjio broj workera
-                self.client_host = self.client_host[:-1] + ("% s" % (self.brojacAktivnihWorkera-1)) # ili str(brojacProcesa)  ISPRAVI KAD ODUZIMAS I DODAJES
-                self.client_port = self.client_port - self.brojacAktivnihWorkera
-                self.server_host = self.server_host[:-1] + ("% s" % (self.brojacAktivnihWorkera-1))
-                self.server_port = self.server_port - self.brojacAktivnihWorkera
+    @staticmethod
+    def DoReader():
+        if Reader.pomBrWorkera > Reader.brojacAktivnihWorkera: #onda se smanjio broj workera
+                Reader.client_host = Reader.client_host[:-1] + ("% s" % (Reader.brojacAktivnihWorkera-1)) # ili str(brojacProcesa)  ISPRAVI KAD ODUZIMAS I DODAJES
+                Reader.client_port = Reader.client_port - Reader.brojacAktivnihWorkera
+                Reader.server_host = Reader.server_host[:-1] + ("% s" % (Reader.brojacAktivnihWorkera-1))
+                Reader.server_port = Reader.server_port - Reader.brojacAktivnihWorkera
 
         else:
             global iterator
-            while iterator < self.brojacAktivnihWorkera:
-                    self.client_host = self.client_host[:-1] + ("% s" % (self.brojacAktivnihWorkera + 6)) # ili str(brojacProcesa)
-                    self.client_port = self.client_port + self.brojacAktivnihWorkera
-                    self.server_host = self.server_host[:-1] + ("% s" % self.brojacAktivnihWorkera)
-                    self.server_port = self.server_port + self.brojacAktivnihWorkera
+            while iterator < Reader.brojacAktivnihWorkera:
+                    Reader.client_host = Reader.client_host[:-1] + ("% s" % (Reader.brojacAktivnihWorkera + 6)) # ili str(brojacProcesa)
+                    Reader.client_port = Reader.client_port + Reader.brojacAktivnihWorkera
+                    Reader.server_host = Reader.server_host[:-1] + ("% s" % Reader.brojacAktivnihWorkera)
+                    Reader.server_port = Reader.server_port + Reader.brojacAktivnihWorkera
                     iterator+=1
     @staticmethod
     def CreateServerSocket():
@@ -55,9 +55,9 @@ class Reader:
             return client_socket
         except:
             exit()
-
-    def ReceiveData(self):
-        conn = self.CreateServerSocket()
+    @staticmethod
+    def ReceiveData():
+        conn = Reader.CreateServerSocket()
         while True:
             try:
                 dataRecv = conn.recv(4096)
@@ -70,14 +70,15 @@ class Reader:
             except:
                 print("Greska!!!!!!!!!!!")
         conn.close()
-
-    def  RequestCode(self):
+    @staticmethod
+    def  RequestCode():
         global pomBr
         if pomBr==0:
-            client_socket = self.CreateClientSocket()
+            client_socket = Reader.CreateClientSocket()
             pomBr+=1
+            reader = Reader()
         while True:
-            msg = pickle.dumps(self.optionInput())
+            msg = pickle.dumps(reader.optionInput())
 
             client_socket.send(msg)
             print("poslao requset")
