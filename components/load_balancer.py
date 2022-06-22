@@ -1,6 +1,6 @@
 import socket,pickle
 import sys
-sys.path.append('D:/GITHUB/RESProjekat3/RES-2022')
+sys.path.append('D:\Res-2022')
 from models.item import Item
 from components.worker import Worker
 from multiprocessing import Process

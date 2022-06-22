@@ -2,7 +2,7 @@ from distutils.log import error
 from logging import exception
 import sys
 import threading
-sys.path.append('D:/GITHUB/RESProjekat3/RES-2022')
+sys.path.append('D:\Res-2022')
 import socket, pickle, time, random
 import constants.codes as codes
 from models.item import Item
