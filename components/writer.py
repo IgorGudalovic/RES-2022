@@ -1,4 +1,3 @@
-from distutils.log import error
 import sys
 import threading
 sys.path.append('/home/x/Documents/GitHub/RES-2022/')
@@ -6,21 +5,18 @@ import socket, pickle, time, random
 import constants.codes as codes
 from models.item import Item
 from multiprocessing import Process
-from threading import Timer
-
- 
 
 class Writer:
 
+    @staticmethod
     def CreateClientSocket1():
         try:
             client_socket = socket.socket()
             client_socket.connect(('127.0.0.1', 5001))
             return client_socket
-
         except:
             exit()
-        
+    @staticmethod
     def CreateClientSocket2():
         try:
             client_socket2 = socket.socket()
@@ -29,8 +25,9 @@ class Writer:
         except:
             exit()
 
-    def SendItem():
-        client_socket = Writer.CreateClientSocket1()    
+
+    def SendItem(self):
+        client_socket = self.CreateClientSocket1()
         listCodes = []
         for code in codes.Code:
             listCodes.append(code.name)
@@ -42,14 +39,14 @@ class Writer:
             client_socket.send(data_string)
             time.sleep(2)
 
-    def  SendState():
-        client_socket2 = Writer.CreateClientSocket2()
+    def  SendState(self):
+        client_socket2 = self.CreateClientSocket2()
         while True:
-            msg = Writer.inputState()
+            msg = self.inputState()
             client_socket2.send(msg.encode("utf-8"))
 
     #zastita unosa stanja workera
-    def inputState():
+    def inputState(self):
         try:
             state = input("Upisi broj za komandu koju zelite:\n\
                 1.Upali novi worker\n\
@@ -63,14 +60,13 @@ class Writer:
                 msg = "OFF"
                 return msg
             else: 
-                print("Molim Vas unesite samo broj 1 ili 2\n")
-                Writer.inputState()
+                #print("Molim Vas unesite samo broj 1 ili 2\n")
+                self.inputState()
         except EOFError as e:
             print(e)   
 
-            
-#LoadBalancer.DoLoadBalancer()
-pItemSend = Process(target=Writer.SendItem)
-tStateSend = threading.Thread(target=Writer.SendState)
+writer = Writer()
+pItemSend = Process(target=writer.SendItem)
+tStateSend = threading.Thread(target=writer.SendState)
 pItemSend.start()
 tStateSend.start()
