@@ -1,8 +1,6 @@
-# Koristi Workere da bi citao podatke iz baze
 import socket,pickle
 import sys
-import time
-sys.path.append('D:/GITHUB/RESProjekat3/RES-2022')
+sys.path.append('/home/x/Documents/GitHub/RES-2022/')
 from multiprocessing import Process
 from threading import Thread
 import load_balancer
@@ -23,13 +21,13 @@ class Reader:
 
     pomBrWorkera = getattr(load_balancer,'brojIstorijeWorkera')
     brojacAktivnihWorkera = getattr(load_balancer,'brWorkera')
-
-    def DoReader(): 
-        if Reader.pomBrWorkera > Reader.brojacAktivnihWorkera: #onda se smanjio broj workera   
+    @staticmethod
+    def DoReader():
+        if Reader.pomBrWorkera > Reader.brojacAktivnihWorkera: #onda se smanjio broj workera
                 Reader.client_host = Reader.client_host[:-1] + ("% s" % (Reader.brojacAktivnihWorkera-1)) # ili str(brojacProcesa)  ISPRAVI KAD ODUZIMAS I DODAJES
                 Reader.client_port = Reader.client_port - Reader.brojacAktivnihWorkera
                 Reader.server_host = Reader.server_host[:-1] + ("% s" % (Reader.brojacAktivnihWorkera-1))
-                Reader.server_port = Reader.server_port - Reader.brojacAktivnihWorkera              
+                Reader.server_port = Reader.server_port - Reader.brojacAktivnihWorkera
 
         else:
             global iterator
@@ -39,7 +37,7 @@ class Reader:
                     Reader.server_host = Reader.server_host[:-1] + ("% s" % Reader.brojacAktivnihWorkera)
                     Reader.server_port = Reader.server_port + Reader.brojacAktivnihWorkera
                     iterator+=1
-
+    @staticmethod
     def CreateServerSocket():
         try:            
             server_socket = socket.socket()
@@ -49,7 +47,7 @@ class Reader:
             return conn
         except:
             exit()
-
+    @staticmethod
     def CreateClientSocket():
         try:
             client_socket = socket.socket()
@@ -57,91 +55,101 @@ class Reader:
             return client_socket
         except:
             exit()
-
+    @staticmethod
     def ReceiveData():
         conn = Reader.CreateServerSocket()
         while True:
-            dataRecv = conn.recv(4096)
             try:
+                dataRecv = conn.recv(4096)
                 data = pickle.loads(dataRecv)
                 print("Vrednost je:")
                 print(data)
-            except:
                 if not data:
                     # if data is not received break
                     break
+            except:
+                print("Greska!!!!!!!!!!!")
         conn.close()
-
+    @staticmethod
     def  RequestCode():
         global pomBr
         if pomBr==0:
             client_socket = Reader.CreateClientSocket()
             pomBr+=1
+            reader = Reader()
         while True:
-            msg = Reader.optionInput()
+            msg = pickle.dumps(reader.optionInput())
+
             client_socket.send(msg)
             print("poslao requset")
 
     #zastita unosa za biranje requesta
-    def optionInput():
+    def optionInput(self):
         print("Upisi broj za opciju po kojoj zelite da nadjete vrednost:")
         print("1.Historical")#po vremenskom intervalu
         print("2.Code")#po kodu
         meni = input()
         if meni == "1":
-            code = Reader.codeSelectionFunction()
-            timeFrom = Reader.timeFromFunction ()
-            timeTo = Reader.timeToFunction()
+            code = self.codeSelectionFunction()
+            if code == "1":
+                code = "CODE_ANALOG"
+            if code == "2":
+                code = "CODE_CUSTOM"
+            if code == "3":
+                code = "CODE_SINGLENOE"
+            if code == "4":
+                code = "CODE_CONSUMER"
+            timeFrom = self.timeFromFunction ()
+            timeTo = self.timeToFunction()
             
             hv = HistoricalValue(timeFrom,timeTo,code)
             req = Request("Historical", hv)
-            msg = pickle.dumps(req)
-            return msg
+            return req
         if meni == "2":
-            code = Reader.codeSelectionFunction()
+            code = self.codeSelectionFunction()
+
             req = Request("Code", code)
             msg = pickle.dumps(req)
             return msg
         else:
             print("Molim Vas unesite broj 1 ili 2")
-            Reader.optionInput()
+            self.optionInput()
 
     #zastita unosa za code
-    def codeSelectionFunction():
+    def codeSelectionFunction(self):
         code = input("Upisi broj za CODE koju zelite:\n\
                 1.ANALOG/DIGITAL\n\
                 2.CUSTOM/LIMITSET\n\
                 3.SINGLENODE/MULTIPLENODE\n\
                 4.CONSUMER/SOURCE\n")
         if code!="1" and code!="2" and code!="3" and code!="4":
-            Reader.codeSelectionFunction()
+            self.codeSelectionFunction()
         return code
     #zastita unosa za vreme1
-    def timeFromFunction():
+    def timeFromFunction(self):
         timeFrom = input("Unesi vremenski interval u formatu Y-m-d H:M:S \nod:")
         try:
             date = datetime.strptime(timeFrom, '%Y-%m-%d %H:%M:%S')
             return date
         except:
             print("greska")
-            Reader.timeFromFunction()                    
+            self.timeFromFunction()
 
     #zastita unosa za vreme2
-    def timeToFunction():
+    def timeToFunction(self):
         timeTo = input("do:")
         try:
             date = datetime.strptime(timeTo, '%Y-%m-%d %H:%M:%S')
             return date
         except:
             print("greska")
-            Reader.timeToFunction()
+            self.timeToFunction()
 
-
-pReceiveData = Process(target=Reader.ReceiveData)
-tRequestCode = Thread(target=Reader.RequestCode)
-Reader.DoReader()
+reader = Reader()
+pReceiveData = Process(target=reader.ReceiveData)
+tRequestCode = Thread(target=reader.RequestCode)
+reader.DoReader()
 pReceiveData.start()
 tRequestCode.start()
 while True:
-    time.sleep(2)
-    Reader.DoReader()
+    reader.DoReader()

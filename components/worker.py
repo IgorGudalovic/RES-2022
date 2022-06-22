@@ -65,6 +65,7 @@ class Worker:
         cd_statuses = self.__EvaluateDataState()
         self.__ProcessData(cd_statuses)
         self.__RemoveCheckedWorkerProperties()
+        self.ReaderWorker()
         self.is_available = True
 
     def GetLastValueByCode(self, code: str, db_path=None):
@@ -87,9 +88,9 @@ class Worker:
         for cd in self.collection_descriptions:
             code_1, code_2 = False, False
             for worker_property in cd.historical_collection:
-                if worker_property.code.name == cd.dataset.value[0]:
+                if worker_property.code == cd.dataset.value[0]:
                     code_1 = True
-                elif worker_property.code.name == cd.dataset.value[1]:
+                elif worker_property.code == cd.dataset.value[1]:
                     code_2 = True
 
             if code_1 and code_2:
@@ -107,6 +108,22 @@ class Worker:
                         Worker.__SaveDataInDatabase(worker_property, cd.id)
                     else:
                         self.worker_properties_to_remove[cd.id] = worker_property
+
+    def GetAllValuesByCode(self, code: str, db_path=None):
+        if db_path is None:
+            db_path = Worker.__GetDatabasePath()
+        with threading.Lock(), sqlite3.connect(db_path) as con:
+            cur = con.cursor()
+            dataset_id = self.GetDataSetByCode(code)
+            query = Queries.GetAllValue(dataset_id + 1, code)
+            cur.execute(query)
+            records = cur.fetchall()
+
+        values = []
+        if records is not None:
+            for record in records:
+                values.append(record[0])
+        return values
 
     @staticmethod
     def __SaveDataInDatabase(worker_property: WorkerProperty, dataset_id: int, db_path=None):  # pragma: no cover
@@ -129,7 +146,7 @@ class Worker:
         if worker_property.code == Code.CODE_DIGITAL:
             return True
 
-        last_value = self.GetLastValueByCode(worker_property.code.name, db_path)
+        last_value = self.GetLastValueByCode(worker_property.code, db_path)
         if not last_value:  # No data in database with this code
             return True
 
@@ -167,7 +184,7 @@ class Worker:
 
     # Checks if new value is out of deadband of old value
     @staticmethod
-    def CheckDeadband(old_value: int, new_value: int):
+    def CheckDeadband(old_value: int or float, new_value: int or float):
         difference = abs(old_value - new_value)
         if difference > (old_value * 0.02):
             return True
@@ -193,37 +210,49 @@ class Worker:
         wID = self.id
         client_host = '127.0.1.' + (str(wID))
         client_port = 5001 + wID
-        client_socket.connect((client_host, client_port))
+        try:
+            client_socket.connect((client_host, client_port))
+            return client_socket
+        except:
+            exit()
 
     def ConnectServerSocket(self):
         global server_socket
         wID = self.id
         server_host = '127.0.0.' + (str(6 + wID))
         server_port = 5999 + wID
-        server_socket.bind((server_host, server_port))
-        server_socket.listen()
+        try:
+            server_socket.bind((server_host, server_port))
+            server_socket.listen()
+            conn, address = server_socket.accept()
+            return conn
+        except:
+            exit()
 
     def ReceiveRequest(self):
-        conn, address = server_socket.accept()
+        conn = self.ConnectServerSocket()
         pomBr = 0
         while True:
             try:
-                dataRecv = pickle.loads(conn.recv(4096))# on primi objekat Request-a
+                dataRecv = conn.recv(4096)# on primi objekat Request-a
+                msg = pickle.loads(dataRecv)
                 #prvi put kad primi request napravi klijenta za slanje na reader
                 if pomBr == 0:
                     pomBr+=1
-                    Worker.ConnectClientSocket(self)
-
-
+                    client_socket = self.ConnectClientSocket()
+                value = None
                 #dobavi value po vremenu
-                #if data[0] == "Historical":
-                
+                if msg.option == "Historical":
+                    worker = Worker(1)
+                    value = worker.GetData(msg[1][2])
                 #dobavi value po kodu
-                #elif data[0] == "Code":
-
+                elif msg.option == "Code":
+                    worker = Worker(1)
+                    value = worker.GetAllValuesByCode(msg.code)
+                    
                 #posalji dobavljen value
-                #data_string = pickle.dumps(dataSend)
-                #client_socket.send(data_string)
+                data_string = pickle.dumps(value)
+                client_socket.send(data_string)
             except:
                 data_string = pickle.dumps("GRESKA")
                 client_socket.send(data_string)
@@ -231,7 +260,6 @@ class Worker:
         conn.close()  # close the connection
 
     def ReaderWorker(self):
-        Worker.ConnectServerSocket(self)
         pReceiveRequest = Process(target=Worker.ReceiveRequest(self))
         pReceiveRequest.start()
         
