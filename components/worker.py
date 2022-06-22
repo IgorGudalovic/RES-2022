@@ -4,8 +4,8 @@ import socket
 import pickle
 import threading
 import sys
-sys.path.append('D:/GITHUB/RESProjekat3/RES-2022')
-
+sys.path.append('/home/x/Documents/GitHub/RES-2022/')
+from models.request import Request
 from constants.codes import Code, Codes
 from constants.data_sets import DataSet, DataSets
 from constants.queries import Queries
@@ -131,7 +131,7 @@ class Worker:
             db_path = Worker.__GetDatabasePath()
         with threading.Lock(), sqlite3.connect(db_path) as con:
             cur = con.cursor()
-            query = Queries.InsertItem(dataset_id + 1, worker_property.code.name, worker_property.worker_value)
+            query = Queries.InsertItem(dataset_id + 1, worker_property.code, worker_property.worker_value)
             cur.execute(query)
             con.commit()
 
@@ -241,6 +241,7 @@ class Worker:
                     pomBr+=1
                     client_socket = self.ConnectClientSocket()
                 value = None
+                #req = Request(msg[0], msg[1])
                 #dobavi value po vremenu
                 if msg.option == "Historical":
                     worker = Worker(1)

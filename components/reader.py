@@ -99,7 +99,7 @@ class Reader:
                 code = "CODE_SINGLENOE"
             if code == "4":
                 code = "CODE_CONSUMER"
-            timeFrom = self.timeFromFunction ()
+            timeFrom = self.timeFromFunction()
             timeTo = self.timeToFunction()
             
             hv = HistoricalValue(timeFrom,timeTo,code)
@@ -109,8 +109,7 @@ class Reader:
             code = self.codeSelectionFunction()
 
             req = Request("Code", code)
-            msg = pickle.dumps(req)
-            return msg
+            return req
         else:
             print("Molim Vas unesite broj 1 ili 2")
             self.optionInput()
