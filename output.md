@@ -201,6 +201,7 @@ Metode:
 > def codeSelectionFunction() Ukoliko koirsnik oodabere pretraživanje po
 > code-u, preuzima sa konzole vrednost code-a.
 <br><br>
+
 4.4 Klasa Worker
 
 class Worker:
