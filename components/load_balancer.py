@@ -100,7 +100,7 @@ if __name__ == "__main__":  # ovo ispod se nece pozvati pri importovanju
             global brWorkera
             #global descList
             global brojIstorijeWorkera
-            conn = LoadBalancer.CreateServerSocket2()
+            conn = self.CreateServerSocket2()
             while True:
                 dataRecv = conn.recv(4096).decode("utf-8")
                 print("\nStiglo:")
@@ -112,8 +112,8 @@ if __name__ == "__main__":  # ovo ispod se nece pozvati pri importovanju
                 if  dataRecv == "ON":
                     print("NOVI WORKER UPALJEN\n")                
                     worker = Worker(brWorkera, True, True)
-                    desc = self.Buffer()
-                    tWorker = Process(target=Worker.SaveData, args=(worker,desc))
+                    description = self.Buffer()
+                    tWorker = Process(target=Worker.SaveData, args=(worker,description))
                     listaAktivnihWorkera.append(tWorker)
                     brojIstorijeWorkera +=1
                     brWorkera +=1 

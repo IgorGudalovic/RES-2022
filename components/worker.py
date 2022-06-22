@@ -5,7 +5,6 @@ import pickle
 import threading
 import sys
 sys.path.append('/home/x/Documents/GitHub/RES-2022/')
-from models.request import Request
 from constants.codes import Code, Codes
 from constants.data_sets import DataSet, DataSets
 from constants.queries import Queries
@@ -14,6 +13,7 @@ from models.description import Description
 from models.worker_property import WorkerProperty
 from multiprocessing import Process
 from datetime import datetime
+from models.item import Item
 
 client_socket = socket.socket() 
 server_socket = socket.socket()
@@ -249,13 +249,14 @@ class Worker:
                 #dobavi value po kodu
                 elif msg.option == "Code":
                     worker = Worker(1)
-                    value = worker.GetAllValuesByCode(msg.code)
+                    print(msg.data)
+                    value = worker.GetAllValuesByCode(msg.data)
                     
                 #posalji dobavljen value
                 data_string = pickle.dumps(value)
                 client_socket.send(data_string)
-            except:
-                data_string = pickle.dumps("GRESKA")
+            except Exception as e:
+                data_string = pickle.dumps(e)
                 client_socket.send(data_string)
                 break
         conn.close()  # close the connection
@@ -263,4 +264,3 @@ class Worker:
     def ReaderWorker(self):
         pReceiveRequest = Process(target=Worker.ReceiveRequest(self))
         pReceiveRequest.start()
-        

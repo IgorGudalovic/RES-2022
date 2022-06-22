@@ -107,6 +107,14 @@ class Reader:
             return req
         if meni == "2":
             code = self.codeSelectionFunction()
+            if code == "1":
+                code = "DataSet_1"
+            if code == "2":
+                code = "DataSet_2"
+            if code == "3":
+                code = "DataSet_3"
+            if code == "4":
+                code = "DataSet_4"
 
             req = Request("Code", code)
             return req
