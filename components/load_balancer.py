@@ -1,6 +1,6 @@
 import socket,pickle
 import sys
-sys.path.append('C:/Users/Ema/OneDrive/Dokumenti/GitHub/RES-2022')
+sys.path.append('D:/GITHUB/RESProjekat3/RES-2022')
 from models.item import Item
 from components.worker import Worker
 from multiprocessing import Process
@@ -15,7 +15,8 @@ descList = []
 descItemList = []
 descID = 0
 
-class LoadBalancer:       
+class LoadBalancer: 
+          
     def CreateServerSocket1():
         try:            
             server_socket = socket.socket()
@@ -36,13 +37,18 @@ class LoadBalancer:
             exit()
 
     def ReceiveItem():
+            #Receives item
+        server_socket = socket.socket()
+        server_socket.bind(('127.0.0.1', 5001))
+        server_socket.listen()
         items = []
         id = 0        
-        conn = LoadBalancer.CreateServerSocket1()
+        conn, address = server_socket.accept()
         while True:
             id +=1
             dataRecv = conn.recv(4096)
-            print("primio Item")
+            print("primio poruku")
+            # receive data stream
             data = pickle.loads(dataRecv)   
             if not data:
                 # if data is not received break
@@ -74,30 +80,26 @@ class LoadBalancer:
             dataset = 3
         if item.code == Code.CODE_CONSUMER or item.code == Code.CODE_SOURCE:
             dataset = 4
-
         #items 
         descItemList.append(item)
         description = Description(descID, descItemList, dataset)
         return description
 
-    #bafer radi na principu FIFO
-    def Buffer():
-        global descList
-        try:
-            desc = descList.pop(0)
-            return desc
-        except:
-            print("Descritpion lista je prazna")
 
     def ReceiveState():
         global brWorkera
-        global descList
+        global desc
         global brojIstorijeWorkera
-        conn = LoadBalancer.CreateServerSocket2()
+        server_socket2 = socket.socket()
+        server_socket2.bind(('127.0.0.2', 5000))
+        server_socket2.listen()
+        #Receives state    
+        conn, address = server_socket2.accept()
         while True:
             dataRecv = conn.recv(4096).decode("utf-8")
-            print("\nStiglo:")
+            print("\nstiglo:")
             print(dataRecv)
+            # receive data stream
             if not dataRecv:
                 # if data is not received break
                 break
@@ -105,27 +107,27 @@ class LoadBalancer:
             if  dataRecv == "ON":
                 print("NOVI WORKER UPALJEN\n")                
                 worker = Worker(brWorkera, True, True)
-                desc = LoadBalancer.Buffer()
                 tWorker = Process(target=Worker.SaveData, args=(worker,desc))
                 listaAktivnihWorkera.append(tWorker)
                 brojIstorijeWorkera +=1
                 brWorkera +=1 
-
                 br = 0
-                while br<len(listaAktivnihWorkera):                    
+                while br<len(listaAktivnihWorkera):
+                    
                     print(f"Upaljen worker: {br}")
                     listaAktivnihWorkera[br].start() 
-                    br+=1
-
-            elif  dataRecv == "OFF":
-                if brWorkera > 1:
-                    listaAktivnihWorkera.remove(listaAktivnihWorkera[brWorkera-1])
-                    brWorkera-=1
-                    print(" WORKER UGASEN\n")
+                    br+=1           
+            else:
+                if  dataRecv == "OFF":
+                    if brWorkera > 1:
+                        listaAktivnihWorkera.remove(listaAktivnihWorkera[brWorkera-1])
+                        brWorkera-=1
+                        print(" WORKER UGASEN\n")
+                    else:
+                        print("GRESKA Nema vise workera\n")
                 else:
-                    print("GRESKA Nema vise workera\n")
-
-        conn.close()
+                    print("")
+        conn.close()  # close the connection
            
         
 if __name__ == "__main__":  # ovo ispod se nece pozvati pri importovanju

@@ -1,23 +1,21 @@
 from distutils.log import error
+from logging import exception
 import sys
 import threading
-sys.path.append('/home/x/Documents/GitHub/RES-2022/')
+sys.path.append('D:/GITHUB/RESProjekat3/RES-2022')
 import socket, pickle, time, random
 import constants.codes as codes
 from models.item import Item
 from multiprocessing import Process
 from threading import Timer
 
- 
-
 class Writer:
-
+    
     def CreateClientSocket1():
         try:
             client_socket = socket.socket()
             client_socket.connect(('127.0.0.1', 5001))
             return client_socket
-
         except:
             exit()
         
@@ -42,13 +40,12 @@ class Writer:
             client_socket.send(data_string)
             time.sleep(2)
 
-    def  SendState():
+    def SendState():
         client_socket2 = Writer.CreateClientSocket2()
         while True:
             msg = Writer.inputState()
             client_socket2.send(msg.encode("utf-8"))
 
-    #zastita unosa stanja workera
     def inputState():
         try:
             state = input("Upisi broj za komandu koju zelite:\n\
@@ -66,7 +63,8 @@ class Writer:
                 print("Molim Vas unesite samo broj 1 ili 2\n")
                 Writer.inputState()
         except EOFError as e:
-            print(e)   
+            print(e)
+            return None   
 
             
 #LoadBalancer.DoLoadBalancer()
