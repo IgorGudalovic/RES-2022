@@ -3,7 +3,6 @@ import sys
 sys.path.append('/home/x/Documents/GitHub/RES-2022/')
 from models.item import Item
 from components.worker import Worker
-from multiprocessing import Process
 from models.description import Description
 from constants.codes import Code
 import threading
@@ -60,8 +59,6 @@ if __name__ == "__main__":  # ovo ispod se nece pozvati pri importovanju
                 pom = id - 1
                 print(f"Item br {pom} code:{items[pom].code}  lista vrednost: {items[pom].value}\n")
 
-                #global desc
-                #desc = LoadBalancer.ForwardDataPrepare(item)
                 lb = LoadBalancer([])
                 self.descList.append(lb.ForwardDataPrepare(item))
 
@@ -98,42 +95,40 @@ if __name__ == "__main__":  # ovo ispod se nece pozvati pri importovanju
 
         def ReceiveState(self):
             global brWorkera
-            #global descList
+            global listaAktivnihWorkera
             global brojIstorijeWorkera
             conn = self.CreateServerSocket2()
             while True:
+                br = 0
+                if len(listaAktivnihWorkera) > 0:
+                    while br<len(listaAktivnihWorkera):
+                        try:
+                            description = self.Buffer()
+                            worker = listaAktivnihWorkera[br]
+                            if worker.is_available:
+                                worker.SaveData(description)
+                        except:
+                            break
+                        br+=1
                 dataRecv = conn.recv(4096).decode("utf-8")
                 print("\nStiglo:")
                 print(dataRecv)
                 if not dataRecv:
                     # if data is not received break
                     break
-                print(f"Broj workera: {brWorkera}")
                 if  dataRecv == "ON":
-                    print("NOVI WORKER UPALJEN\n")                
-                    worker = Worker(brWorkera, True, True)
-                    description = self.Buffer()
-                    tWorker = Process(target=Worker.SaveData, args=(worker,description))
-                    listaAktivnihWorkera.append(tWorker)
-                    brojIstorijeWorkera +=1
-                    brWorkera +=1 
-
-                    br = 0
-                    while br<len(listaAktivnihWorkera):
-                        print(f"Upaljen worker: {br}")
-                        listaAktivnihWorkera[br].start()
-                        br+=1
-
-                elif  dataRecv == "OFF":
-                    if brWorkera > 1:
-                        listaAktivnihWorkera.remove(listaAktivnihWorkera[brWorkera-1])
-                        brWorkera-=1
+                    print("NOVI WORKER UPALJEN\n")
+                    worker = Worker(len(listaAktivnihWorkera)+1, True,True)  #Worker(ID)
+                    listaAktivnihWorkera.append(worker)
+                elif dataRecv == "OFF":
+                    if len(listaAktivnihWorkera) > 0:
+                        listaAktivnihWorkera.remove(listaAktivnihWorkera[len(listaAktivnihWorkera)-1])
                         print(" WORKER UGASEN\n")
                     else:
                         print("GRESKA Nema vise workera\n")
 
             conn.close()
-    
+
     dList = []
     lb = LoadBalancer(dList)
     pReceiveItem = threading.Thread(target=lb.ReceiveItem)

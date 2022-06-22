@@ -64,8 +64,8 @@ class Worker:
         cd_statuses = self.__EvaluateDataState()
         self.__ProcessData(cd_statuses)
         self.__RemoveCheckedWorkerProperties()
-        self.ReaderWorker()
         self.is_available = True
+        self.ReaderWorker()
 
     def GetLastValueByCode(self, code: str, db_path=None):
         try:
@@ -191,8 +191,8 @@ class Worker:
 
     def GetDataSetByCode(self, code: str):
         for id in range(0, 4):
-            if code == self.collection_descriptions[id].dataset.value[0] or code == \
-                    self.collection_descriptions[id].dataset.value[1]:
+            if code == self.collection_descriptions[id].dataset.value[0].name or code == \
+                    self.collection_descriptions[id].dataset.value[1].name:
                 return id
 
     def ChangeState(self, new_state: bool = None):  # pragma: no cover
