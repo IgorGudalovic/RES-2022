@@ -132,9 +132,10 @@ Dijagram aktivnosti sistema
 <br><br><br><br>
 **4. Opis rešenja**
 
-<br>4.1 Klasa Load Balancer
+<br>
+4.1 Klasa Load Balancer
 
-:class LoadBalancer:
+>class LoadBalancer:
 
 Metode:
 
@@ -174,12 +175,14 @@ Metode:
 > def CreateClientSocket2() - kreira soket i otvara konekciju ka load balancer-u.
 > def inputState(self) - Ispisuje na konzoli moguce operacije nad workerima, beleži korisnikov izbor i prosleđuje ga load balancer-u.
 
-<br><br>4.3 Klasa Reader
+<br><br>
+4.3 Klasa Reader
 
->class Reader:
+> class Reader:
 
 Metode:
->def DoReader():
+
+> def DoReader():
 
 > def CreateServerSocket() - otvara serversku konekciju ka worker
 > komponenti
@@ -209,7 +212,7 @@ Metode:
 
 4.4 Klasa Worker
 
->class Worker:
+> class Worker:
 
 Metode:
 
