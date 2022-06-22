@@ -85,7 +85,7 @@ podatke iz baze.
 mogućnost pretraživanja vrednosti po nekom vremenskom intervalu ili po
 code-u.
 
-![](./dijagramAktivnosti.png)
+![](./dijagramKomponenti.png)
 
 Komunikacija izmedju komponenti ostvarena je putem tcp konekcije I
 prilikom prenosa podataka koriscene su funkcije *Pickle.Load()* I
@@ -125,7 +125,8 @@ U toku rada sistema, prilikom svkaog upisivanja podataka u bazu ili
 njihovog iščitavanja, logger komponenta bleži svaku tu aktivnost u txt
 fajl.
 
-![](./dijagramKomponenti.png)
+
+![](./dijagramAktivnosti.png)
 
 Dijagram aktivnosti sistema
 <br><br><br><br>
