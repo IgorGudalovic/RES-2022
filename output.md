@@ -21,9 +21,8 @@ Sistem se sastoji iz 6 kompnenti:
 
 6.  Logger
 
-![](./eb00cf2096153f773e199381e29b565dbb6af1b9.png){width="6.668141951006124in"
-height="3.236827427821522in"}
-
+![](./eb00cf2096153f773e199381e29b565dbb6af1b9.png)
+<br><br><br><br>
 **2. Dizajn**
 
 **Writer** predtavlja softversku komponentu čiji je zadatak da load
@@ -82,8 +81,7 @@ podatke iz baze.
 mogućnost pretraživanja vrednosti po nekom vremenskom intervalu ili po
 code-u.
 
-![](./0dc7bc55434cc9a451b94ebc5ccdfe93e513a828.png){width="5.939597550306211in"
-height="3.6875in"}
+![](./0dc7bc55434cc9a451b94ebc5ccdfe93e513a828.png)
 
 Komunikacija izmedju komponenti ostvarena je putem tcp konekcije I
 prilikom prenosa podataka koriscene su funkcije *Pickle.Load()* I
@@ -95,7 +93,7 @@ vreme osluškuje da li je od writera dobio zahtev za aktiviranje/gašenje
 nekog od workera I da li je od workera dobio novi podatak koji je
 neophodo proslediti dalje). U tu svrhu korišcene su biblioteke
 *muliprocessing* I *thread*.
-
+<br><br><br><br>
 **3. Scenario rada**
 
 Writer komponenta u svakom momentu korinsiku daje mogućnost paljenja i
@@ -123,14 +121,13 @@ U toku rada sistema, prilikom svkaog upisivanja podataka u bazu ili
 njihovog iščitavanja, logger komponenta bleži svaku tu aktivnost u txt
 fajl.
 
-![](./9ea56a3c420c67bdab31f5d612fd3e095e7b1176.png){width="5.0in"
-height="3.4166666666666665in"}
+![](./9ea56a3c420c67bdab31f5d612fd3e095e7b1176.png)
 
 Dijagram aktivnosti sistema
-
+<br><br><br><br>
 **4. Opis rešenja**
 
-4.1 Klasa Load Balancer
+<br>4.1 Klasa Load Balancer
 
 class LoadBalancer:
 
@@ -156,7 +153,7 @@ Metode:
 > otvara komunikaciju na definisanom portu I osluškuje da li je writer
 > zahtevao paljenje ili gašenje nekog od workera.
 
-4.2. Klasa Writer
+<br><br>4.2. Klasa Writer
 
 class Writer:
 
@@ -169,11 +166,11 @@ Metode:
 > I u zavisnosti od korisnikovog izbora šalje izabranu opciju load
 > balanceru.
 
-4.3 Klasa Reader
+<br><br>4.3 Klasa Reader
 
-class Reader:
+>class Reader:
 
-def DoReader():
+>def DoReader():
 
 > def CreateServerSocket() - otvara serversku konekciju ka worker
 > komponenti
@@ -204,41 +201,43 @@ def DoReader():
 
 class Worker:
 
-def GetData(self, code: str, db_path=None) - metoda koja reader
+Metode:
+
+>def GetData(self, code: str, db_path=None) - metoda koja reader
 komponenti nudi sve podatke za određeni code, a on proverava da li
 podatak pripada vremenskom intervalu.
 
-def GetLastValueByCode(self, code: str, db_path=None) - metoda koja
+>def GetLastValueByCode(self, code: str, db_path=None) - metoda koja
 izvalči pdoatke iz baze.
 
-def \_\_SaveLocally(self, data: Description) - pretvara podatak tipa
+>def \_\_SaveLocally(self, data: Description) - pretvara podatak tipa
 Description u podatak tipa CollectionDescription.
 
-def SaveData(self, data: Description) - čuva dobijene podatke od load
+>def SaveData(self, data: Description) - čuva dobijene podatke od load
 balancera
 
-def \_\_EvaluateDataState(self)- provjerava da li je dataset popunjen,
+>def \_\_EvaluateDataState(self)- provjerava da li je dataset popunjen,
 da li su su obe vrednosti u strukturi pre snimanja u bazi.
 
-def \_\_ProcessData(self, cd_statuses: list) - proverava da li dobijeni
+>def \_\_ProcessData(self, cd_statuses: list) - proverava da li dobijeni
 podaci treba da budu upisani u bazu.
 
-def ValidateValue(self, worker_property: WorkerProperty, db_path=None) -
+>def ValidateValue(self, worker_property: WorkerProperty, db_path=None) -
 proverava da li je u pitanju CODE.DIGITAL,ako nije proverava da li
 podatak izlazi iz DeadBend-a.
 
-def GetValue(self, code: str, db_path=None)-varaća posljednju vrednost.
+>def GetValue(self, code: str, db_path=None)-varaća posljednju vrednost.
 
-def \_\_RemoveCheckedWorkerProperties(self) - metoda za brisanje
+>def \_\_RemoveCheckedWorkerProperties(self) - metoda za brisanje
 nepotrebnih podataka, koji nisu prosli kroz validaciju
 
-def \_\_CreateDatabaseTables(db_path=None) -metoda za kreiranje tabela
+>def \_\_CreateDatabaseTables(db_path=None) -metoda za kreiranje tabela
 baze podataka
 
-def \_\_GetDatabasePath() - metoda za genersianje putanje.
+>def \_\_GetDatabasePath() - metoda za genersianje putanje.
 
-def CheckDeadband(old_value: int or float, new_value: int or float) -
+>def CheckDeadband(old_value: int or float, new_value: int or float) -
 proverava da li je razlika izmedju stare i nove vrijednosti veća od 2%
 
-def GetDataSetByCode(self, code: str) - metoda koja vraća kojem datasetu
+>def GetDataSetByCode(self, code: str) - metoda koja vraća kojem datasetu
 pripada neki code.
