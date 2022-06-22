@@ -169,6 +169,9 @@ Metode:
 > def SendState() - Na konzoli ispisuje moguce opeeracije nad workerima
 > I u zavisnosti od korisnikovog izbora šalje izabranu opciju load
 > balanceru.
+> def CreateClientSocket1() - kreira soket i otvara konekciju ka load balancer-u.
+> def CreateClientSocket2() - kreira soket i otvara konekciju ka load balancer-u.
+> def inputState(self) - Ispisuje na konzoli moguce operacije nad workerima, beleži korisnikov izbor i prosleđuje ga load balancer-u.
 
 <br><br>4.3 Klasa Reader
 
