@@ -25,7 +25,7 @@ Sistem se sastoji iz 6 kompnenti:
 
 6.  Logger
 
-![](./eb00cf2096153f773e199381e29b565dbb6af1b9.png)
+![](./zadatak.png)
 <br><br><br><br>
 **2. Dizajn**
 
@@ -85,7 +85,7 @@ podatke iz baze.
 mogućnost pretraživanja vrednosti po nekom vremenskom intervalu ili po
 code-u.
 
-![](./0dc7bc55434cc9a451b94ebc5ccdfe93e513a828.png)
+![](./dijagram aktivnosti.png)
 
 Komunikacija izmedju komponenti ostvarena je putem tcp konekcije I
 prilikom prenosa podataka koriscene su funkcije *Pickle.Load()* I
@@ -125,7 +125,7 @@ U toku rada sistema, prilikom svkaog upisivanja podataka u bazu ili
 njihovog iščitavanja, logger komponenta bleži svaku tu aktivnost u txt
 fajl.
 
-![](./9ea56a3c420c67bdab31f5d612fd3e095e7b1176.png)
+![](./dijagram komponenti.png)
 
 Dijagram aktivnosti sistema
 <br><br><br><br>
