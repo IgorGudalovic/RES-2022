@@ -1,12 +1,13 @@
 import socket,pickle
 import sys
-sys.path.append('/home/x/Documents/GitHub/RES-2022/')
+sys.path.append('C:/Users/Ema/OneDrive/Dokumenti/GitHub/RES-2022')
 from multiprocessing import Process
 from threading import Thread
-import load_balancer
+import components.load_balancer as load_balancer
 from models.historical_value import HistoricalValue
 from models.request import Request
 from datetime import datetime
+from components.logger import Logger
 
 iterator = 0
 pomBr = 0
@@ -44,6 +45,7 @@ class Reader:
             server_socket.bind((Reader.server_host, Reader.server_port))
             server_socket.listen()
             conn, address = server_socket.accept()
+            Logger.Log("Reader component accepted connection from worker")
             return conn
         except:
             exit()
@@ -52,6 +54,7 @@ class Reader:
         try:
             client_socket = socket.socket()
             client_socket.connect((Reader.client_host, Reader.client_port))
+            Logger.Log("Reader component connected to a worker")
             return client_socket
         except:
             exit()
@@ -64,11 +67,13 @@ class Reader:
                 data = pickle.loads(dataRecv)
                 print("Vrednost je:")
                 print(data)
+                Logger.Log("Reader recived data")
                 if not data:
                     # if data is not received break
                     break
             except:
                 print("Greska!!!!!!!!!!!")
+                Logger.Log("Recive packet error")
         conn.close()
     @staticmethod
     def  RequestCode():
@@ -145,11 +150,12 @@ class Reader:
             print("greska")
             self.timeToFunction()
 
-reader = Reader()
-pReceiveData = Process(target=reader.ReceiveData)
-tRequestCode = Thread(target=reader.RequestCode)
-reader.DoReader()
-pReceiveData.start()
-tRequestCode.start()
-while True:
+if __name__ == "__main__":  # ovo ispod se nece pozvati pri importovanju
+    reader = Reader()
+    pReceiveData = Process(target=reader.ReceiveData)
+    tRequestCode = Thread(target=reader.RequestCode)
     reader.DoReader()
+    pReceiveData.start()
+    tRequestCode.start()
+    while True:
+        reader.DoReader()

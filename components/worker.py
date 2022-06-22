@@ -4,7 +4,7 @@ import socket
 import pickle
 import threading
 import sys
-sys.path.append('D:/GITHUB/RESProjekat3/RES-2022')
+sys.path.append('C:/Users/Ema/OneDrive/Dokumenti/GitHub/RES-2022')
 
 from constants.codes import Code, Codes
 from constants.data_sets import DataSet, DataSets
@@ -14,6 +14,7 @@ from models.description import Description
 from models.worker_property import WorkerProperty
 from multiprocessing import Process
 from datetime import datetime
+from components.logger import Logger
 
 client_socket = socket.socket() 
 server_socket = socket.socket()
@@ -131,9 +132,10 @@ class Worker:
             db_path = Worker.__GetDatabasePath()
         with threading.Lock(), sqlite3.connect(db_path) as con:
             cur = con.cursor()
-            query = Queries.InsertItem(dataset_id + 1, worker_property.code.name, worker_property.worker_value)
+            query = Queries.InsertItem(dataset_id + 1, worker_property.code, worker_property.worker_value)
             cur.execute(query)
             con.commit()
+            Logger.Log("Data is saved in data base")
 
     # Remove processed data from worker
     def __RemoveCheckedWorkerProperties(self):  # pragma: no cover
