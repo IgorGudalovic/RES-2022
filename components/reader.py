@@ -152,11 +152,12 @@ class Reader:
             print("greska")
             self.timeToFunction()
 
-reader = Reader()
-pReceiveData = Process(target=reader.ReceiveData)
-tRequestCode = Thread(target=reader.RequestCode)
-reader.DoReader()
-pReceiveData.start()
-tRequestCode.start()
-while True:
+if __name__ == "__main__":  # ovo ispod se nece pozvati pri importovanju
+    reader = Reader()
+    pReceiveData = Process(target=reader.ReceiveData)
+    tRequestCode = Thread(target=reader.RequestCode)
     reader.DoReader()
+    pReceiveData.start()
+    tRequestCode.start()
+    while True:
+        reader.DoReader()

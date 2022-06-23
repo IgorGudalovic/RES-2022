@@ -64,9 +64,9 @@ class Writer:
                 self.inputState()
         except EOFError as e:
             print(e)   
-
-writer = Writer()
-pItemSend = Process(target=writer.SendItem)
-tStateSend = threading.Thread(target=writer.SendState)
-pItemSend.start()
-tStateSend.start()
+if __name__ == "__main__":  # ovo ispod se nece pozvati pri importovanju
+    writer = Writer()
+    pItemSend = Process(target=writer.SendItem)
+    tStateSend = threading.Thread(target=writer.SendState)
+    pItemSend.start()
+    tStateSend.start()

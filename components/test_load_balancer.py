@@ -1,40 +1,49 @@
 import unittest
-from unittest.mock import Mock
+import socket
+from unittest import TestCase
 
-from components.load_balancer import LoadBalancer
+from load_balancer import LoadBalancer
 from models.description import Description
 from constants.codes import Code
 from models.item import Item
-from components.load_balancer import descID
-import socket
+from constants.data_sets import DataSet
 
-class TestLoadBalancer(unittest.TestCase):
-    
-    def test_forwarddataprepare(self):
+from unittest.mock import MagicMock, patch
+
+class TestLoadBalancer(TestCase):
+
+    def test_forward_data_prepare(self):
+        lb = LoadBalancer([])
         code1 = Code.CODE_ANALOG
-        value1 = 5  
+        value1 = 5
         item1 = Item(code1, value1)
         items = []
         items.append(item1)
-        description1 = Description(1, items, 1)
-        actual_description = LoadBalancer.ForwardDataPrepare(item1)
-        self.assertEqual(description1, actual_description)
-        
-    def test_connect1_ok(self):        
-        socket1 = LoadBalancer.CreateServerSocket1()
-        self.assertEqual(type(socket.socket()), type(socket1))
-        
-    def test_connect1_wrong(self):        
-        socket1 = LoadBalancer.CreateServerSocket1()
-        self.assertNotEqual(type(socket.socket()), type(socket1))    
-        
-    def test_connect2_ok(self):        
-        socket1 = LoadBalancer.CreateServerSocket2()
-        self.assertEqual(type(socket.socket()), type(socket1))
-        
-    def test_connect2_wrong(self):        
-        socket1 = LoadBalancer.CreateServerSocket2()
-        self.assertNotEqual(type(socket.socket()), type(socket1))                  
+        description1 = Description(1, items, DataSet.DataSet_1)
+        actual_description = lb.ForwardDataPrepare(item1)
+        self.assertEqual(description1.dataset, actual_description.dataset)
 
-if __name__ == '__main__':
+    def test_buffer_empty(self):
+        mocklb = MagicMock(LoadBalancer)
+        d = MagicMock(Description)
+        self.assertNotEqual(LoadBalancer.Buffer(mocklb), d)
+
+    #@patch('components.load_balancer.LoadBalancer.CreateServerSocket2')
+    #def test_receive_state(self, mock_CreateServerSocket2):
+    #    mock_socket = MagicMock(socket.socket)
+    #    mock_socket.recv = MagicMock(return_value=4)
+    #    mock_CreateServerSocket2.return_value = mock_socket
+    #    mocklb = MagicMock(LoadBalancer)
+    #    self.assertNotEqual(LoadBalancer.ReceiveState(mocklb), None)
+
+    #@patch('components.load_balancer.LoadBalancer.CreateServerSocket1')
+    #def test_receive_item(self, mock_CreateServerSocket1):
+    #    mock_socket = MagicMock(socket.socket)
+    #    mock_socket.recv = MagicMock(return_value=None)
+    #    mock_CreateServerSocket1.return_value = mock_socket
+    #    mocklb = MagicMock(LoadBalancer)
+    #    self.assertEqual(LoadBalancer.ReceiveItem(mocklb), None)
+
+
+if name == 'main':
     unittest.main()
